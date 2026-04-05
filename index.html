@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Data Center Architect v2</title>
+<style>
+:root{--bg:#060c12;--panel:#0b1018;--border:#1a2840;--accent:#00e5ff;--green:#00ff9c;--yellow:#ffd43b;--red:#ff4d4d;--text:#c8d8f0;--dim:#5a7a99}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;display:grid;grid-template-rows:54px 1fr 40px;grid-template-columns:176px 1fr 196px;height:100vh;overflow:hidden}
+#topbar{grid-column:1/-1;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:18px}
+#topbar h1{font-size:15px;color:var(--accent);text-shadow:0 0 12px var(--accent),0 0 24px rgba(0,229,255,.3);white-space:nowrap;letter-spacing:1px}
+.sg{display:flex;flex-direction:column;gap:1px}
+.sl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+.sv{font-size:13px;font-weight:bold}
+.sv-y{color:var(--yellow)}.sv-g{color:var(--green)}.sv-o{color:#ff9f66}
+.bar-wrap{width:88px;height:6px;background:#111820;border-radius:3px;overflow:hidden;margin-top:3px}
+.bar-fill{height:100%;border-radius:3px;transition:width .25s}
+.bar-pw{background:linear-gradient(90deg,#ff9f66,#ff6b6b)}
+.bar-ht{background:linear-gradient(90deg,#ffd43b,#ff4d4d)}
+.top-btn{background:#0d1520;border:1px solid var(--border);border-radius:4px;color:var(--dim);padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace;transition:all .15s;white-space:nowrap}
+.top-btn:hover{border-color:var(--accent);color:var(--accent)}
+.top-btn.on{background:#071830;border-color:var(--accent);color:var(--accent);box-shadow:0 0 6px rgba(0,229,255,.2)}
+.top-btn.danger{border-color:#ff4d4d33;color:var(--red)}
+#left{background:var(--panel);border-right:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:5px;overflow-y:auto}
+.ptitle{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:2px;margin-top:5px}
+.tool-btn{background:#0d1520;border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 9px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;text-align:left;transition:all .15s;width:100%}
+.tool-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tool-btn.active{background:#071830;border-color:var(--accent);color:var(--accent);box-shadow:0 0 8px rgba(0,229,255,.2)}
+.tool-btn.del{background:#1a0808;border-color:var(--red);color:var(--red)}
+.tog-row{display:flex;gap:3px}
+.tog{background:#0d1520;border:1px solid var(--border);border-radius:3px;color:var(--dim);padding:3px 0;font-size:9px;cursor:pointer;font-family:'Courier New',monospace;flex:1;text-align:center;transition:all .12s}
+.tog:hover{border-color:var(--accent)}.tog.on{background:#071830;border-color:var(--accent);color:var(--accent)}
+.srow{display:flex;justify-content:space-between;font-size:11px;padding:1px 0}
+.srow .lbl{color:var(--dim)}.srow .val{color:var(--text)}
+.obj-item{background:#0d1520;border:1px solid var(--border);border-radius:4px;padding:6px;font-size:10px;margin-bottom:3px}
+.obj-item.done{border-color:var(--green);background:#061410}
+.obj-title{font-weight:bold;margin-bottom:1px}
+.obj-item.done .obj-title{color:var(--green)}
+.obj-reward{color:var(--yellow);font-size:9px}
+#game-container{position:relative;overflow:hidden}
+#right{background:var(--panel);border-left:1px solid var(--border);padding:10px;overflow-y:auto}
+.shop-item{display:flex;align-items:center;gap:7px;padding:6px 7px;background:#0d1520;border:1px solid var(--border);border-radius:6px;margin-bottom:4px;cursor:pointer;transition:all .15s}
+.shop-item:hover{border-color:var(--accent);background:#0a1828}
+.shop-item.na{opacity:.35;pointer-events:none}
+.sicon{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sinfo{flex:1;min-width:0}
+.sname{font-size:11px;font-weight:bold}
+.scost{font-size:10px;color:var(--yellow)}
+.sdesc{font-size:9px;color:var(--dim);margin-top:1px}
+.sstat{font-size:9px;color:#ff9f66}
+#bottombar{grid-column:1/-1;background:var(--panel);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:14px;font-size:10px}
+#status-msg{color:var(--dim)}
+.kbd{color:var(--dim);margin-left:auto}.kbd span{color:var(--accent)}
+#tt{position:fixed;background:#0b1018;border:1px solid var(--accent);border-radius:6px;padding:7px 11px;font-size:10px;pointer-events:none;z-index:1000;display:none;max-width:190px;line-height:1.6;box-shadow:0 0 16px rgba(0,229,255,.15)}
+#tt.v{display:block}#tt-title{font-weight:bold;color:var(--accent);margin-bottom:3px}#tt-body{color:var(--dim)}
+#notifs{position:fixed;top:64px;right:206px;z-index:1000;pointer-events:none}
+.notif{background:#0b1018;border-left:3px solid var(--green);padding:5px 11px;margin-bottom:4px;border-radius:0 4px 4px 0;font-size:11px;animation:sin .25s ease,fout .4s ease 2.6s forwards}
+.notif.warn{border-left-color:var(--yellow)}.notif.err{border-left-color:var(--red)}
+@keyframes sin{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fout{from{opacity:1}to{opacity:0;transform:translateX(16px)}}
+#umodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;align-items:center;justify-content:center}
+#umodal.open{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--accent);border-radius:10px;padding:22px;max-width:460px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 0 40px rgba(0,229,255,.12)}
+.mtitle{font-size:15px;color:var(--accent);margin-bottom:14px}
+.upg{display:flex;justify-content:space-between;align-items:center;padding:9px;border:1px solid var(--border);border-radius:5px;margin-bottom:6px}
+.upg.owned{border-color:var(--green);background:#061410;opacity:.6}
+.upg-buy{background:var(--accent);color:#000;border:none;border-radius:3px;padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace;font-weight:bold}
+.upg-buy:disabled{background:#222;color:#444;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>⬡ DATA CENTER ARCHITECT</h1>
+  <div class="sg"><div class="sl">Balance</div><div class="sv sv-y" id="ui-money">$100</div></div>
+  <div class="sg"><div class="sl">Income</div><div class="sv sv-g" id="ui-income">--</div></div>
+  <div class="sg">
+    <div class="sl">Power <span id="ui-pw-v" style="color:var(--text)">0/500W</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-pw" id="ui-pw-b" style="width:0%"></div></div>
+  </div>
+  <div class="sg">
+    <div class="sl">Heat <span id="ui-ht-v" style="color:var(--text)">0°</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-ht" id="ui-ht-b" style="width:0%"></div></div>
+  </div>
+  <div class="sg"><div class="sl">Working GPUs</div><div class="sv sv-g" id="ui-gpus">0</div></div>
+  <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <button class="top-btn" id="btn-econ">Economy: OFF</button>
+    <button class="top-btn" id="btn-upgrades">⚡ Upgrades</button>
+    <button class="top-btn danger" id="btn-reset">Reset</button>
+  </div>
+</div>
+
+<div id="left">
+  <div class="ptitle">Tools</div>
+  <button class="tool-btn" id="tool-connect">[ C ]  Connect Mode</button>
+  <button class="tool-btn" id="tool-delete">[ D ]  Delete Mode</button>
+  <div class="ptitle">Background</div>
+  <div class="tog-row">
+    <button class="tog on" id="th-circuit">Circuit</button>
+    <button class="tog" id="th-space">Space</button>
+    <button class="tog" id="th-dark">Dark</button>
+  </div>
+  <div class="tog-row">
+    <button class="tog on" id="tog-bp">Backplane</button>
+    <button class="tog on" id="tog-stars">Stars</button>
+  </div>
+  <div class="ptitle">Stats</div>
+  <div class="srow"><span class="lbl">Connected</span><span class="val" id="st-conn">0</span></div>
+  <div class="srow"><span class="lbl">Working GPUs</span><span class="val" id="st-gpus">0</span></div>
+  <div class="srow"><span class="lbl">Total Earned</span><span class="val" id="st-earned">$0</span></div>
+  <div class="srow"><span class="lbl">Time</span><span class="val" id="st-time">0:00</span></div>
+  <div class="ptitle">Objectives</div>
+  <div id="obj-list"></div>
+</div>
+
+<div id="game-container"></div>
+
+<div id="right">
+  <div class="ptitle">Shop</div>
+  <div id="shop-list"></div>
+</div>
+
+<div id="bottombar">
+  <div id="status-msg">Loading assets…</div>
+  <div class="kbd"><span>C</span> Connect · <span>D</span> Delete · <span>ESC</span> Cancel · <span>Right-click</span> Delete wire</div>
+</div>
+
+<div id="tt"><div id="tt-title"></div><div id="tt-body"></div></div>
+<div id="notifs"></div>
+
+<div id="umodal">
+  <div class="mbox">
+    <div class="mtitle">⚡ Research &amp; Upgrades</div>
+    <div id="upg-list"></div>
+    <button class="tool-btn" style="margin-top:10px" onclick="document.getElementById('umodal').classList.remove('open')">Close</button>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// DATA CENTER ARCHITECT v2
+// ================================================================
+
+// ---- Image pre-loading: DOM Image → Canvas dataURI → Phaser loader ----
+//
+// Why this works on file://:
+//   • new Image() + img.src loads local files without XHR (no file:// restriction)
+//   • canvas.toDataURL() works for same-origin file:// images (no canvas taint)
+//   • this.load.image(key, dataURI) in Phaser's preload() accepts data: URIs
+//     directly — zero XHR, zero CORS, works everywhere.
+//
+// CDN fallbacks kick in only when local files are missing (e.g. web deployment).
+
+const IMG_SRCS = {
+  gpu:           {local:'gpu.png',               cdn:'https://i.postimg.cc/mtN9HFfK/gpu.png'},
+  cpu:           {local:'cpu.png',               cdn:'https://i.postimg.cc/3k8vCJ3N/cpu.png'},
+  memory:        {local:'memory.png',            cdn:'https://i.postimg.cc/Wd5J9L4n/memory.png'},
+  retimer:       {local:'retimer.png',           cdn:'https://i.postimg.cc/dkykthjH/retimer.png'},
+  switch:        {local:'switch.png',            cdn:'https://i.postimg.cc/64x77BH9/switch.png'},
+  baseboard:     {local:'baseboard.png',         cdn:'https://i.postimg.cc/H80rXFKb/baseboard.png'},
+  networking:    {local:'networking.png',        cdn:'https://i.postimg.cc/t1fnj3Wn/networking.png'},
+  memoryExpander:{local:'memory%20expander.png', cdn:'https://i.postimg.cc/67T4gj2N/memory-expander.png'},
+  bgcircuit:     {local:'background.png',        cdn:null},
+};
+
+// Populated before Phaser starts: key → data URI string
+const IMG_DATA_URIS = {};
+
+function imgToDataURI(img) {
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    c.getContext('2d').drawImage(img, 0, 0);
+    return c.toDataURL('image/png');
+  } catch(e) { return null; }
+}
+
+function loadOneImg(key, localSrc, cdnSrc) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const uri = imgToDataURI(img);
+      if (uri) { IMG_DATA_URIS[key] = uri; resolve(); return; }
+      // canvas tainted (shouldn't happen for local file://) — try CDN with CORS
+      tryCDN();
+    };
+    img.onerror = () => tryCDN();
+    img.src = localSrc;
+
+    function tryCDN() {
+      if (!cdnSrc) { resolve(); return; }
+      const img2 = new Image();
+      img2.crossOrigin = 'anonymous';
+      img2.onload = () => {
+        const uri = imgToDataURI(img2);
+        if (uri) IMG_DATA_URIS[key] = uri;
+        resolve();
+      };
+      img2.onerror = () => resolve();
+      img2.src = cdnSrc;
+    }
+  });
+}
+
+function preloadAllImages() {
+  setStatus('Loading assets…');
+  return Promise.all(Object.entries(IMG_SRCS).map(([k,v]) => loadOneImg(k, v.local, v.cdn)));
+}
+
+const COMP = {
+  baseboard:      {label:'Baseboard',    cost:2,  power:5,   heat:0,   icon:'📋', col:'#3a5a8a', desc:'PCB carrier board'},
+  gpu:            {label:'GPU',          cost:10, power:50,  heat:12,  icon:'🎮', col:'#00cc7a', desc:'Needs CPU + Memory to work'},
+  cpu:            {label:'CPU',          cost:5,  power:30,  heat:6,   icon:'⚙️',  col:'#5588ee', desc:'Controls up to 4 devices'},
+  memory:         {label:'Memory',       cost:5,  power:10,  heat:1,   icon:'💾', col:'#ddbb44', desc:'Required by GPUs to run'},
+  switch:         {label:'Switch',       cost:4,  power:15,  heat:2,   icon:'🔀', col:'#ee8844', desc:'Connects up to 8 devices'},
+  retimer:        {label:'Retimer',      cost:2,  power:2,   heat:0,   icon:'🔁', col:'#9977ee', desc:'Drop on a wire to extend range'},
+  memoryExpander: {label:'Mem Expander', cost:3,  power:8,   heat:2,   icon:'🔧', col:'#44ccaa', desc:'Up to 8 memory slots'},
+  networking:     {label:'Networking',   cost:3,  power:12,  heat:2,   icon:'🌐', col:'#44eedd', desc:'Network interface card'},
+  cooling:        {label:'Cooling Fan',  cost:8,  power:5,   heat:-18, icon:'❄️',  col:'#66bbff', desc:'Reduces heat by 18°/s'},
+  psu:            {label:'Power Supply', cost:15, power:0,   heat:4,   icon:'⚡', col:'#ffdd44', desc:'Adds 200W power capacity'},
+};
+const BASE_COSTS = Object.fromEntries(Object.entries(COMP).map(([k,v])=>[k,v.cost]));
+
+// Image-backed types (have PNG files)
+const IMG_TYPES = ['gpu','cpu','memory','retimer','switch','baseboard','networking','memoryExpander'];
+// Display scale for each image
+const IMG_SCALE = {baseboard:.19,gpu:.48,cpu:.44,memory:.44,retimer:.26,switch:.42,networking:.19,memoryExpander:.19};
+// Hit-zone radius for each (rough, for circular interaction)
+const HIT_R = {baseboard:56,gpu:32,cpu:28,memory:22,retimer:16,switch:32,networking:36,memoryExpander:38};
+
+const ALLOWED = {
+  gpu:['cpu','switch'],
+  memory:['cpu','switch','memoryExpander'],
+  memoryExpander:['cpu','switch'],
+  networking:['cpu','networking','switch'],
+  cpu:['gpu','memory','memoryExpander','networking','switch'],
+  switch:['gpu','memory','memoryExpander','cpu','networking'],
+};
+const PORT_LAYOUT = {
+  cpu:   [[-42,-62],[0,-62],[42,-62]],
+  gpu:   [[-62,-44],[-62,-15],[-62,15],[-62,44]],
+  memory:[[62,-44],[62,-15],[62,15],[62,44]],
+  switch:[[-32,62],[0,62],[32,62]],
+  networking:[[-55,72],[55,72]],
+  memoryExpander:[[72,-18],[72,18]],
+};
+const BASE_CONN_LEN=220, MAX_CPU_BASE=4, MAX_SWITCH=8, MAX_MEM_EXP=8;
+
+const S={
+  money:100,totalEarned:0,time:0,
+  economyOn:false,powerCap:300,heat:0,maxHeat:100,
+  throughput:0,theme:'circuit',shootingStars:true,backplaneOn:true,
+  objectives:new Set(),upgrades:{},
+};
+
+const upg={
+  powerCap:()=>   S.powerCap+(S.upgrades.pw1?300:0)+(S.upgrades.pw2?500:0),
+  incomeGPU:()=>  5*(S.upgrades.oc1?1.5:1)*(S.upgrades.oc2?2:1),
+  connLen:()=>    BASE_CONN_LEN*(S.upgrades.sig1?1.6:1),
+  maxCPU:()=>     S.upgrades.mc1?6:MAX_CPU_BASE,
+  maxHeat:()=>    S.maxHeat+(S.upgrades.cool1?60:0),
+  costMult:()=>   S.upgrades.disc1?.75:1,
+  compCost:t=>    Math.max(1,Math.round(BASE_COSTS[t]*upg.costMult())),
+};
+
+const OBJ_DEFS=[
+  {id:'o1',title:'First Boot',     desc:'Connect any 2 components',    reward:15,  check:(_S,lines)=>lines.filter(l=>l.ok).length>=1},
+  {id:'o2',title:'GPU Online',     desc:'1 working GPU',               reward:30,  check:S=>S.throughput>=1},
+  {id:'o3',title:'Mini Cluster',   desc:'4 working GPUs',              reward:100, check:S=>S.throughput>=4},
+  {id:'o4',title:'Data Center',    desc:'8 working GPUs',              reward:250, check:S=>S.throughput>=8},
+  {id:'o5',title:'First $500',     desc:'Earn $500 total',             reward:75,  check:S=>S.totalEarned>=500},
+  {id:'o6',title:'Stay Cool',      desc:'Place a Cooling Fan',         reward:40,  check:(_S,_l,cs)=>cs.some(c=>c.isPart&&c.type==='cooling')},
+  {id:'o7',title:'Overclocker',    desc:'Buy Overclocking upgrade',    reward:150, check:S=>S.upgrades.oc1},
+];
+
+const UPGRADES=[
+  {id:'pw1', name:'Capacitor Bank',   desc:'+300W power cap',       cost:50},
+  {id:'pw2', name:'Industrial PSUs',  desc:'+500W power cap',       cost:120},
+  {id:'oc1', name:'Overclocking',     desc:'GPU income ×1.5',       cost:75},
+  {id:'oc2', name:'Extreme OC',       desc:'GPU income ×2 (stacks)',cost:180},
+  {id:'sig1',name:'Signal Boost',     desc:'Wire range ×1.6',       cost:60},
+  {id:'cool1',name:'Thermal Design',  desc:'Heat cap +60°',         cost:45},
+  {id:'mc1', name:'Multi-Core CPU',   desc:'CPU handles 6 devices', cost:90},
+  {id:'disc1',name:'Bulk Discount',   desc:'Shop costs ×0.75',      cost:130},
+];
+
+// ================================================================
+function initGame(){
+  // Graphics layers:
+  // bgG      depth -10  : background fill / tiled circuit bg
+  // starsG   depth -9   : animated starfield overlay
+  // wireG    depth 0    : wires between components
+  // glowG    depth 1    : soft glow halos behind sprites
+  // sprites  depth 2(bb)/3(parts) : the actual images
+  // procG    depth 3    : procedural components (cooling, psu)
+  // overlayG depth 4    : selection rings, status LEDs, port dots
+  // flowG    depth 5    : data packets + connection preview
+  let bgG,starsG,wireG,glowG,procG,overlayG,flowG;
+  let bgTile=null; // TileSprite for circuit background
+  let components=[],lines=[];
+  let connMode=false,delMode=false,selNode=null;
+  let cursor={x:0,y:0};
+  let flowOff=0;
+  const stars={list:[],shooting:[],nextShoot:0};
+
+  const fmt=n=>{const a=Math.abs(n);if(a<1e3)return'$'+n.toFixed(a<10?1:0);if(a<1e6)return'$'+(n/1e3).toFixed(1)+'k';return'$'+(n/1e6).toFixed(2)+'m';};
+  const fmtT=s=>{const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;};
+  const dst=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const nodeKind=n=>n.isPort?n.group:n.type;
+  const h2n=h=>parseInt(h.replace('#',''),16);
+
+  function canPair(a,b){
+    const A=nodeKind(a),B=nodeKind(b);
+    return(ALLOWED[A]&&ALLOWED[A].includes(B))||(ALLOWED[B]&&ALLOWED[B].includes(A));
+  }
+  const portOfBase=(n,base)=>n.isPort&&n.baseboard===base;
+
+  // ---- sound ----
+  function beep(type){
+    try{
+      const ctx=new(window.AudioContext||window.webkitAudioContext)();
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      if(type==='ok'){o.frequency.value=523;g.gain.setValueAtTime(.07,0);g.gain.exponentialRampToValueAtTime(.001,.25);o.start();o.stop(.25);}
+      else if(type==='buy'){o.frequency.value=660;o.frequency.linearRampToValueAtTime(880,.12);g.gain.setValueAtTime(.06,0);g.gain.exponentialRampToValueAtTime(.001,.2);o.start();o.stop(.2);}
+      else if(type==='obj'){o.frequency.value=440;o.frequency.linearRampToValueAtTime(660,.1);o.frequency.linearRampToValueAtTime(880,.2);g.gain.setValueAtTime(.07,0);g.gain.exponentialRampToValueAtTime(.001,.35);o.start();o.stop(.35);}
+      else{o.type='sawtooth';o.frequency.value=110;g.gain.setValueAtTime(.07,0);g.gain.exponentialRampToValueAtTime(.001,.14);o.start();o.stop(.14);}
+    }catch(e){}
+  }
+
+  function notify(msg,type=''){
+    const el=document.createElement('div');
+    el.className='notif'+(type?' '+type:'');
+    el.textContent=msg;
+    document.getElementById('notifs').appendChild(el);
+    setTimeout(()=>el.remove(),3200);
+  }
+  function setStatus(msg){document.getElementById('status-msg').textContent=msg;}
+
+  // ---- ports ----
+  function makePorts(base){
+    base.ports=[];
+    for(const[group,arr]of Object.entries(PORT_LAYOUT))
+      for(const[dx,dy]of arr)
+        base.ports.push({isPort:true,group,baseboard:base,dx,dy,x:base.x+dx,y:base.y+dy});
+  }
+  function syncPorts(base){if(!base.ports)return;for(const p of base.ports){p.x=base.x+p.dx;p.y=base.y+p.dy;}}
+  function nearestPort(base,part,tx,ty){
+    if(!base?.ports)return null;
+    let best=null,bestD=Infinity;
+    for(const p of base.ports){if(!canPair(p,part))continue;const d=Math.hypot(p.x-tx,p.y-ty);if(d<bestD){bestD=d;best=p;}}
+    return best;
+  }
+
+  // ---- connection limits ----
+  function connCount(part,typeFilter=null){
+    return lines.filter(L=>{
+      if(!L.ok)return false;
+      if(L.start===part||L.end===part){if(!typeFilter)return true;const o=L.start===part?L.end:L.start;return nodeKind(o)===typeFilter;}
+      return false;
+    }).length;
+  }
+  function limitHit(a,b){
+    const chk=n=>{
+      if(!n.isPart)return false;
+      if(n.type==='cpu'&&connCount(n)>=upg.maxCPU())return true;
+      if(n.type==='switch'&&connCount(n)>=MAX_SWITCH)return true;
+      if(n.type==='memoryExpander'&&connCount(n,'memory')>=MAX_MEM_EXP)return true;
+      return false;
+    };
+    return chk(a)||chk(b);
+  }
+  const maxLen=L=>((L?.retimers||[]).length+1)*upg.connLen();
+
+  function lineValid(a,b,L=null){
+    if(a===b)return{ok:false,r:'Same node'};
+    if(a.isPort&&b.isPort)return{ok:false,r:'Port to port'};
+    if(!canPair(a,b))return{ok:false,r:'Incompatible types'};
+    if(limitHit(a,b))return{ok:false,r:'Connection limit'};
+    if(dst(a,b)>maxLen(L))return{ok:false,r:'Too far — use Retimer'};
+    return{ok:true};
+  }
+
+  // ---- retimer ----
+  function projSeg(px,py,x1,y1,x2,y2){
+    const vx=x2-x1,vy=y2-y1,wx=px-x1,wy=py-y1;
+    const c2=vx*vx+vy*vy;if(c2===0)return{t:0,dist:Math.hypot(px-x1,py-y1),x:x1,y:y1};
+    const t=Math.max(0,Math.min(1,(wx*vx+wy*vy)/c2));
+    const x=x1+t*vx,y=y1+t*vy;return{t,dist:Math.hypot(px-x,py-y),x,y};
+  }
+  function nearestLine(px,py){
+    let best=null,bestD=999;
+    for(const L of lines){const p=projSeg(px,py,L.start.x,L.start.y,L.end.x,L.end.y);if(p.dist<bestD){bestD=p.dist;best={line:L,t:p.t,dist:p.dist};}}
+    return best;
+  }
+  function attachRetimer(r,line,t){
+    if(r.onLine){r.onLine.retimers=(r.onLine.retimers||[]).filter(x=>x!==r);}
+    if(!line.retimers)line.retimers=[];
+    line.retimers.push(r);r.onLine=line;r.t=t;
+  }
+  function detachRetimer(r){if(r.onLine){r.onLine.retimers=(r.onLine.retimers||[]).filter(x=>x!==r);r.onLine=null;r.t=null;}}
+
+  // ---- graph ----
+  function buildAdj(filterFn){
+    const nodes=new Set();
+    for(const c of components)if(filterFn(c))nodes.add(c);
+    for(const L of lines){if(filterFn(L.start))nodes.add(L.start);if(filterFn(L.end))nodes.add(L.end);}
+    const adj=new Map();nodes.forEach(n=>adj.set(n,[]));
+    for(const L of lines){
+      if(!L.ok)continue;
+      if(adj.has(L.start)&&adj.has(L.end)){adj.get(L.start).push(L.end);adj.get(L.end).push(L.start);}
+    }
+    return adj;
+  }
+  function addBP(adj,filterFn){
+    if(!S.backplaneOn)return adj;
+    for(const base of components.filter(n=>n.isPart&&n.type==='baseboard')){
+      const ports=(base.ports||[]).filter(p=>filterFn(p)&&adj.has(p));
+      if(ports.length<=1)continue;
+      const hub=ports[0];
+      for(let i=1;i<ports.length;i++){adj.get(hub).push(ports[i]);adj.get(ports[i]).push(hub);}
+    }
+    return adj;
+  }
+  function anyReach(start,adj,pred){
+    const q=[start],seen=new Set([start]);
+    while(q.length){const n=q.shift();if(pred(n))return true;for(const nb of(adj.get(n)||[])){if(!seen.has(nb)){seen.add(nb);q.push(nb);}}}
+    return false;
+  }
+  const epBase=e=>e.isPort?e.baseboard:(e.isPart?e.attachedTo:null);
+
+  function recomputeAttach(){
+    const bases=components.filter(n=>n.isPart&&n.type==='baseboard');
+    for(const part of components.filter(n=>n.isPart&&n.type!=='baseboard')){
+      part.attachedTo=null;
+      for(const base of bases){
+        const inB=x=>x===base||(x.isPart&&x.type!=='baseboard')||portOfBase(x,base);
+        if(anyReach(part,buildAdj(inB),n=>portOfBase(n,base))){part.attachedTo=base;break;}
+      }
+    }
+  }
+  function lineWorking(L){if(!L.ok)return false;const b1=epBase(L.start),b2=epBase(L.end);return b1&&b2&&b1===b2;}
+
+  function recomputeMetrics(){
+    const connSet=new Set();
+    for(const L of lines){if(L.ok){if(L.start.isPart)connSet.add(L.start);if(L.end.isPart)connSet.add(L.end);}}
+    let total=0;
+    const bases=components.filter(n=>n.isPart&&n.type==='baseboard');
+    for(const base of bases){
+      const inB=n=>n===base||(n.isPart&&n.attachedTo===base)||portOfBase(n,base);
+      let adj=buildAdj(inB);adj=addBP(adj,inB);
+      for(const g of components.filter(n=>n.isPart&&n.type==='gpu')){
+        if(g.attachedTo!==base){g.working=false;continue;}
+        g.working=anyReach(g,adj,n=>n.isPart&&n.type==='cpu'&&n.attachedTo===base)
+                &&anyReach(g,adj,n=>n.isPart&&n.type==='memory'&&n.attachedTo===base);
+        if(g.working)total++;
+      }
+    }
+    for(const g of components.filter(n=>n.isPart&&n.type==='gpu'))if(!g.attachedTo)g.working=false;
+    S.throughput=total;
+
+    const psus=components.filter(n=>n.isPart&&n.type==='psu').length;
+    const effCap=upg.powerCap()+psus*200;
+    const pwUsed=components.filter(n=>n.isPart&&COMP[n.type]?.power>0).reduce((s,c)=>s+(COMP[c.type]?.power||0),0);
+    const pwPct=Math.min(100,(pwUsed/(effCap||1))*100);
+    const htPct=Math.min(100,(S.heat/upg.maxHeat())*100);
+
+    document.getElementById('ui-money').textContent=fmt(S.money);
+    document.getElementById('ui-income').textContent=S.economyOn?fmt(S.throughput*upg.incomeGPU())+'/s':'--';
+    document.getElementById('ui-gpus').textContent=total;
+    document.getElementById('ui-pw-v').textContent=pwUsed+'/'+effCap+'W';
+    document.getElementById('ui-pw-b').style.width=pwPct+'%';
+    document.getElementById('ui-pw-b').style.background=pwPct>90?'#ff4d4d':pwPct>70?'#ff9f66':'linear-gradient(90deg,#ff9f66,#ff6b6b)';
+    document.getElementById('ui-ht-v').textContent=Math.round(S.heat)+'°';
+    document.getElementById('ui-ht-b').style.width=htPct+'%';
+    document.getElementById('ui-ht-b').style.background=htPct>80?'#ff4d4d':htPct>60?'#ff6b6b':'linear-gradient(90deg,#ffd43b,#ff4d4d)';
+    document.getElementById('st-conn').textContent=connSet.size;
+    document.getElementById('st-gpus').textContent=total;
+    document.getElementById('st-earned').textContent=fmt(S.totalEarned);
+    document.getElementById('st-time').textContent=fmtT(S.time);
+  }
+
+  // ---- line management ----
+  function rebind(a,b){
+    if(a.isPort&&b.isPart&&!canPair(a,b)){const r=nearestPort(a.baseboard,b,b.x,b.y);if(r)a=r;}
+    if(b.isPort&&a.isPart&&!canPair(a,b)){const r=nearestPort(b.baseboard,a,a.x,a.y);if(r)b=r;}
+    return[a,b];
+  }
+  function scrubLines(){
+    for(const L of lines){
+      if(L.start.isPart&&L.start.type==='baseboard'){const p=nearestPort(L.start,L.end,L.end.x,L.end.y);if(p)L.start=p;}
+      if(L.end.isPart&&L.end.type==='baseboard'){const p=nearestPort(L.end,L.start,L.start.x,L.start.y);if(p)L.end=p;}
+    }
+  }
+  function addLine(a,b){
+    [a,b]=rebind(a,b);
+    const chk=lineValid(a,b);
+    if(!chk.ok){notify(chk.r,'warn');beep('err');return;}
+    lines.push({start:a,end:b,ok:true,r:null,retimers:[]});
+    beep('ok');notify('Connected!');redraw();
+  }
+  function ptSegDist(px,py,x1,y1,x2,y2){
+    const vx=x2-x1,vy=y2-y1,wx=px-x1,wy=py-y1;
+    const c1=wx*vx+wy*vy;if(c1<=0)return Math.hypot(px-x1,py-y1);
+    const c2=vx*vx+vy*vy;if(c2<=c1)return Math.hypot(px-x2,py-y2);
+    return Math.hypot(px-(x1+(c1/c2)*vx),py-(y1+(c1/c2)*vy));
+  }
+  let _compClicked=false;
+  function deleteLineNear(x,y){
+    if(_compClicked){_compClicked=false;return;}
+    for(let i=0;i<lines.length;i++){
+      if(ptSegDist(x,y,lines[i].start.x,lines[i].start.y,lines[i].end.x,lines[i].end.y)<=12){
+        (lines[i].retimers||[]).forEach(r=>{r.onLine=null;r.t=null;});
+        lines.splice(i,1);beep('err');redraw();return;
+      }
+    }
+  }
+
+  // ================================================================
+  // RENDERING
+  // ================================================================
+  const C_GREEN=0x00ff9c, C_RED=0xff4d4d, C_GRAY=0x334455, C_CYAN=0x00e5ff, C_YELLOW=0xffd43b;
+
+  // Glow halo drawn on glowG (depth 1, behind sprites)
+  function drawGlow(g,c){
+    const x=c.x,y=c.y,t=c.type;
+    const isWork=c.working;
+    const overheat=S.heat>upg.maxHeat()*.82&&t==='gpu';
+    const isSel=c===selNode;
+
+    if(t==='baseboard'){
+      // Subtle board ambient
+      g.fillStyle(0x1a3060,.07);g.fillCircle(x,y,70);
+      return;
+    }
+    // Coloured glow based on state
+    let col=h2n(COMP[t]?.col||'#444466');
+    if(isWork)col=C_GREEN;
+    if(overheat)col=0xff6600;
+    if(isSel)col=C_CYAN;
+
+    const r1=isWork?52:38, r2=isWork?32:22;
+    g.fillStyle(col,isWork?.18:.08);g.fillCircle(x,y,r1);
+    g.fillStyle(col,isWork?.25:.12);g.fillCircle(x,y,r2);
+    if(isWork){g.fillStyle(C_GREEN,.35);g.fillCircle(x,y,14);}
+  }
+
+  // Overlay indicators drawn on overlayG (depth 4, above sprites)
+  function drawOverlay(g,c){
+    const x=c.x,y=c.y,t=c.type;
+    const isWork=c.working;
+    const isSel=c===selNode;
+    const overheat=S.heat>upg.maxHeat()*.82;
+
+    // Selection ring
+    if(isSel){
+      g.lineStyle(2,C_CYAN,.9);g.strokeCircle(x,y,(HIT_R[t]||30)+8);
+      g.lineStyle(1,C_CYAN,.3);g.strokeCircle(x,y,(HIT_R[t]||30)+14);
+    }
+
+    if(t==='gpu'){
+      // Status LED top-right of image
+      const lx=x+26,ly=y-18;
+      if(isWork){g.fillStyle(C_GREEN,.5);g.fillCircle(lx,ly,7);}
+      g.fillStyle(isWork?C_GREEN:(overheat?0xff6600:0x440000),1);g.fillCircle(lx,ly,4);
+      // "ACTIVE" text glow when working
+      if(isWork){g.fillStyle(C_GREEN,.2);g.fillRect(x-20,y+18,40,4);}
+    } else if(t==='baseboard'){
+      // Subtle green corners when has connected parts
+      const hasConn=components.some(c2=>c2.isPart&&c2.type!=='baseboard'&&c2.attachedTo===c);
+      if(hasConn){
+        g.fillStyle(C_GREEN,.6);
+        for(const[cx,cy]of[[x-44,y-27],[x+44,y-27],[x-44,y+27],[x+44,y+27]])g.fillCircle(cx,cy,3);
+      }
+    } else if(t==='cpu'){
+      // Tiny clock indicator
+      if(c.attachedTo){g.fillStyle(0x5588ee,.7);g.fillCircle(x+20,y-20,3);}
+    } else if(t==='retimer'){
+      // Pulse ring
+      g.lineStyle(1,0x9977ee,.5);g.strokeCircle(x,y,18);
+    }
+  }
+
+  // Port dots on overlay
+  function drawPortDots(g){
+    if(!connMode)return;
+    for(const base of components.filter(n=>n.isPart&&n.type==='baseboard')){
+      if(!base.ports)continue;
+      for(const p of base.ports){
+        const col=h2n(COMP[p.group]?.col||'#888');
+        const isSel=p===selNode;
+        if(isSel){g.fillStyle(col,1);g.fillCircle(p.x,p.y,6);g.lineStyle(1,col,.6);g.strokeCircle(p.x,p.y,10);}
+        else{g.fillStyle(col,.5);g.fillCircle(p.x,p.y,4);g.lineStyle(1,col,.3);g.strokeCircle(p.x,p.y,7);}
+      }
+    }
+  }
+
+  // Procedural drawing for types without images (cooling, psu)
+  function drawProcComp(g,c){
+    const x=c.x,y=c.y,t=c.type,isSel=c===selNode;
+    const col=h2n(COMP[t]?.col||'#888888');
+    // Glow
+    g.fillStyle(col,.15);g.fillCircle(x,y,30);
+    g.fillStyle(col,.08);g.fillCircle(x,y,46);
+
+    if(t==='cooling'){
+      g.fillStyle(0x061020,1);g.fillCircle(x,y,20);
+      g.lineStyle(2,0x66bbff,.9);
+      for(let i=0;i<6;i++){
+        const a=i*Math.PI/3;
+        const ex=x+Math.cos(a)*16,ey=y+Math.sin(a)*16;
+        g.beginPath();g.moveTo(x,y);g.lineTo(ex,ey);g.strokePath();
+        const mx=x+Math.cos(a)*10,my=y+Math.sin(a)*10,pa=a+Math.PI/2;
+        g.beginPath();g.moveTo(mx-Math.cos(pa)*5,my-Math.sin(pa)*5);g.lineTo(mx+Math.cos(pa)*5,my+Math.sin(pa)*5);g.strokePath();
+      }
+      g.lineStyle(2,0x66bbff,1);g.strokeCircle(x,y,20);
+      g.fillStyle(0x66bbff,1);g.fillCircle(x,y,4);
+      if(isSel){g.lineStyle(2,C_CYAN,.9);g.strokeCircle(x,y,28);}
+    } else if(t==='psu'){
+      g.fillStyle(0x1a1400,1);g.fillRect(x-26,y-16,52,32);
+      for(let i=0;i<3;i++){
+        g.fillStyle(0x221a00,1);g.fillCircle(x-12+i*12,y,7);
+        g.lineStyle(1,0xffdd44,1);g.strokeCircle(x-12+i*12,y,7);
+        g.fillStyle(0xffdd44,1);g.fillRect(x-13+i*12,y-1,2,3);
+      }
+      g.lineStyle(2,0xffdd44,1);g.strokeRect(x-26,y-16,52,32);
+      if(isSel){g.lineStyle(2,C_CYAN,.9);g.strokeRect(x-30,y-20,60,40);}
+    }
+  }
+
+  // ---- MAIN REDRAW ----
+  function redraw(){
+    for(const base of components.filter(n=>n.isPart&&n.type==='baseboard'))syncPorts(base);
+    scrubLines();
+    for(const L of lines){const v=lineValid(L.start,L.end,L);L.ok=v.ok;L.r=v.r||null;}
+    recomputeAttach();
+
+    wireG.clear();glowG.clear();procG.clear();overlayG.clear();
+
+    // Glows (behind everything)
+    for(const c of components)if(c.isPart)drawGlow(glowG,c);
+
+    // Wires
+    for(const L of lines){
+      const col=!L.ok?C_RED:(lineWorking(L)?C_GREEN:C_GRAY);
+      if(lineWorking(L)){
+        wireG.lineStyle(12,C_GREEN,.06);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
+        wireG.lineStyle(6,C_GREEN,.18);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
+      } else if(!L.ok){
+        wireG.lineStyle(6,C_RED,.2);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
+      }
+      wireG.lineStyle(2,col,1);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
+      if(L.retimers)for(const r of L.retimers)if(!r._dragging){r.x=L.start.x+r.t*(L.end.x-L.start.x);r.y=L.start.y+r.t*(L.end.y-L.start.y);}
+    }
+
+    // Procedural components (cooling, psu)
+    for(const c of components.filter(n=>n.isPart&&!IMG_TYPES.includes(n.type)))drawProcComp(procG,c);
+
+    // Overlays (on top of sprites)
+    for(const c of components)if(c.isPart)drawOverlay(overlayG,c);
+    drawPortDots(overlayG);
+
+    // Sync labels
+    for(const c of components)if(c._lbl){
+      const off=c.type==='memory'?32:c.type==='baseboard'?42:c.type==='retimer'?18:28;
+      c._lbl.setPosition(c.x,c.y+off);
+    }
+
+    recomputeMetrics();
+    checkObjectives();
+  }
+
+  // ---- data flow animation ----
+  function drawFlow(dt){
+    flowOff=(flowOff+100*dt)%28;
+    flowG.clear();
+
+    // Connection preview line
+    if(connMode&&selNode){
+      const sx=selNode.x,sy=selNode.y;
+      const dx=cursor.x-sx,dy=cursor.y-sy,len=Math.hypot(dx,dy);
+      if(len>12){
+        const ux=dx/len,uy=dy/len;
+        flowG.lineStyle(1,C_CYAN,.25);
+        flowG.beginPath();flowG.moveTo(sx,sy);flowG.lineTo(cursor.x,cursor.y);flowG.strokePath();
+        for(let s=0;s<len;s+=9){
+          if(Math.floor(s/9)%2===0){flowG.fillStyle(C_CYAN,.55);flowG.fillCircle(sx+ux*s,sy+uy*s,1.5);}
+        }
+      }
+    }
+
+    // Data packets on working wires
+    for(const L of lines){
+      if(!lineWorking(L))continue;
+      const x1=L.start.x,y1=L.start.y,x2=L.end.x,y2=L.end.y;
+      const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(len<1)continue;
+      const ux=dx/len,uy=dy/len;
+      for(let s=-flowOff;s<=len;s+=28){
+        if(s<0)continue;
+        const a=.4+.6*Math.abs(Math.sin(s/10));
+        flowG.fillStyle(C_GREEN,a);flowG.fillCircle(x1+ux*s,y1+uy*s,3);
+        flowG.fillStyle(C_GREEN,a*.2);flowG.fillCircle(x1+ux*(s-7),y1+uy*(s-7),2);
+      }
+    }
+  }
+
+  // ---- starfield ----
+  function initStars(W,H){
+    stars.list=[];
+    for(const L of [{n:100,sp:14,sz:1.2},{n:60,sp:30,sz:1.8},{n:30,sp:52,sz:2.5}])
+      for(let i=0;i<L.n;i++)stars.list.push({x:Math.random()*W,y:Math.random()*H,vx:-L.sp*(.8+Math.random()*.4),vy:L.sp*.08,sz:L.sz,a:.35+Math.random()*.65});
+    stars.nextShoot=performance.now()+1500;
+  }
+  function drawStars(g,dt,W,H){
+    for(const s of stars.list){
+      s.x+=s.vx*dt;s.y+=s.vy*dt;
+      if(s.x<-4){s.x=W+4;s.y=Math.random()*H;}if(s.y>H+4)s.y=-4;
+      g.fillStyle(0xffffff,s.a);g.fillCircle(s.x,s.y,s.sz);
+    }
+    if(S.shootingStars&&performance.now()>=stars.nextShoot){
+      const a=Phaser.Math.DegToRad(208+Math.random()*14),sp=480+Math.random()*320;
+      stars.shooting.push({x:W*.6+Math.random()*W*.4,y:-20,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:900});
+      stars.nextShoot=performance.now()+(1400+Math.random()*2200);
+    }
+    const alive=[];
+    for(const sh of stars.shooting){
+      sh.life-=dt*1000;sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
+      g.lineStyle(2,0xaac8ff,Math.min(1,sh.life/180));
+      g.beginPath();g.moveTo(sh.x,sh.y);g.lineTo(sh.x-sh.vx*.06,sh.y-sh.vy*.06);g.strokePath();
+      if(sh.life>0&&sh.x>-50&&sh.y<H+50)alive.push(sh);
+    }
+    stars.shooting=alive;
+  }
+
+  // ---- spawn component ----
+  function spawnComp(scene,type){
+    const W=scene.scale.width,H=scene.scale.height;
+    const rx=Phaser.Math.Between(80,W-80),ry=Phaser.Math.Between(90,H-90);
+    let obj;
+
+    if(IMG_TYPES.includes(type)&&scene.textures.exists(type)){
+      const scale=IMG_SCALE[type]||.4;
+      obj=scene.add.image(rx,ry,type).setScale(scale).setDepth(type==='baseboard'?2:3);
+      // Circular interactive zone so black corners aren't clickable
+      const r=HIT_R[type]||30;
+      obj.setInteractive(new Phaser.Geom.Circle(0,0,r/scale),Phaser.Geom.Circle.Contains);
+    } else {
+      // cooling/psu: invisible hit zone (visuals drawn on procG)
+      // missing texture fallback: visible colored rect so component isn't lost
+      const isProcedural = (type==='cooling'||type==='psu');
+      const col = isProcedural ? 0x000000 : h2n(COMP[type]?.col||'#445566');
+      const alpha = isProcedural ? 0 : 0.7;
+      obj=scene.add.rectangle(rx,ry,52,42,col,alpha).setInteractive().setDepth(3);
+    }
+
+    obj.isPart=true;obj.type=type;obj.attachedTo=null;obj.working=false;
+    if(type==='retimer'){obj.onLine=null;obj.t=null;obj._dragging=false;}
+
+    const lblOff=type==='memory'?32:type==='baseboard'?42:type==='retimer'?18:28;
+    const lbl=scene.add.text(rx,ry+lblOff,COMP[type]?.label||type,
+      {font:'9px Courier New',fill:'#3a5a77'}).setOrigin(.5,0).setDepth(6);
+    obj._lbl=lbl;
+
+    // Input handlers
+    if(type==='baseboard'){
+      makePorts(obj);
+      obj.on('pointerdown',p=>{
+        _compClicked=true;
+        if(delMode){
+          const att=components.filter(c=>c.attachedTo===obj);
+          lines=lines.filter(L=>{
+            if(L.start===obj||L.end===obj||L.start.baseboard===obj||L.end.baseboard===obj)return false;
+            for(const a of att)if(L.start===a||L.end===a)return false;
+            return true;
+          });
+          att.forEach(c=>{if(c._lbl)c._lbl.destroy();c.destroy();});
+          components=components.filter(c=>c!==obj&&!att.includes(c));
+          obj.destroy();lbl.destroy();redraw();return;
+        }
+        if(!connMode)return;
+        if(selNode?.isPart){
+          const port=nearestPort(obj,selNode,p.worldX,p.worldY);
+          if(!port){notify('No compatible port','warn');return;}
+          addLine(selNode.isPart?selNode:port,selNode.isPart?port:selNode);
+          if(selNode?.clearTint)selNode.clearTint();selNode=null;
+        } else {
+          let best=null,bestD=Infinity;
+          for(const p2 of obj.ports){const d=Math.hypot(p.worldX-p2.x,p.worldY-p2.y);if(d<bestD){bestD=d;best=p2;}}
+          if(best){selNode=best;setStatus('Port selected. Click a component to connect.');}
+        }
+      });
+    } else {
+      obj.on('pointerdown',()=>{
+        _compClicked=true;
+        if(delMode){
+          if(obj.type==='retimer')detachRetimer(obj);
+          lines=lines.filter(L=>L.start!==obj&&L.end!==obj);
+          obj.destroy();lbl.destroy();components=components.filter(c=>c!==obj);
+          redraw();return;
+        }
+        if(!connMode)return;
+        if(obj.type==='retimer')return;
+        if(!selNode){selNode=obj;setStatus('Selected '+obj.type+'. Click another to connect.');return;}
+        if(selNode===obj)return;
+        addLine(selNode,obj);
+        if(selNode?.clearTint)selNode.clearTint();selNode=null;
+        setStatus('Connected!');
+      });
+    }
+
+    obj.on('pointerover',()=>showTip(obj));
+    obj.on('pointerout',()=>hideTip());
+    scene.input.setDraggable(obj);
+    components.push(obj);
+
+    // Pop-in animation
+    obj.setScale(0);
+    scene.tweens.add({targets:obj,scale:IMG_TYPES.includes(type)?IMG_SCALE[type]||.4:1,ease:'Back.easeOut',duration:320});
+    redraw();
+    return obj;
+  }
+
+  // ---- tooltip ----
+  function showTip(c){
+    const d=COMP[c.type];if(!d)return;
+    const tt=document.getElementById('tt');
+    document.getElementById('tt-title').textContent=d.icon+' '+d.label;
+    let b=d.desc;
+    if(d.power>0)b+='\nPower: '+d.power+'W';
+    if(d.heat>0)b+=' · Heat: +'+d.heat+'/s';
+    if(d.heat<0)b+=' · Cools '+(-d.heat)+'/s';
+    if(c.working)b+='\n✓ WORKING';
+    if(c.type==='psu')b+='\nProvides: +200W cap';
+    document.getElementById('tt-body').textContent=b;
+    tt.classList.add('v');
+  }
+  function hideTip(){document.getElementById('tt').classList.remove('v');}
+
+  // ---- objectives ----
+  function checkObjectives(){
+    const ul=document.getElementById('obj-list');
+    ul.innerHTML='';
+    for(const def of OBJ_DEFS){
+      const done=def.check(S,lines,components);
+      if(done&&!S.objectives.has(def.id)){
+        S.objectives.add(def.id);
+        S.money+=def.reward;S.totalEarned+=def.reward;
+        notify('✓ '+def.title+' (+'+fmt(def.reward)+')','');
+        beep('obj');
+      }
+      const el=document.createElement('div');
+      el.className='obj-item'+(done?' done':'');
+      el.innerHTML=`<div class="obj-title">${done?'✓ ':''}${def.title}</div><div class="obj-reward">${def.desc} · +${fmt(def.reward)}</div>`;
+      ul.appendChild(el);
+    }
+  }
+
+  // ---- shop ----
+  function buildShop(scene){
+    const list=document.getElementById('shop-list');list.innerHTML='';
+    for(const[key,def]of Object.entries(COMP)){
+      const cost=upg.compCost(key);
+      const el=document.createElement('div');
+      el.className='shop-item';el.dataset.type=key;
+      el.classList.toggle('na',!!(S.economyOn&&S.money<cost));
+      el.innerHTML=`<div class="sicon" style="background:${def.col}20;border:1px solid ${def.col}44">${def.icon}</div>
+        <div class="sinfo"><div class="sname">${def.label}</div>
+        <div class="scost">${S.economyOn?'$'+cost:'Free'}</div>
+        <div class="sdesc">${def.desc}</div>
+        ${def.power>0?`<div class="sstat">${def.power}W`+(def.heat>0?` +${def.heat}°/s`:'')+'</div>':''}
+        ${def.heat<0?`<div class="sstat" style="color:#66bbff">Cools ${-def.heat}°/s</div>`:''}
+        ${key==='psu'?`<div class="sstat" style="color:#ffdd44">+200W cap</div>`:''}
+        </div>`;
+      el.addEventListener('click',()=>{
+        const c=upg.compCost(key);
+        if(S.economyOn&&S.money<c){notify('Not enough money','err');beep('err');return;}
+        if(S.economyOn)S.money-=c;
+        spawnComp(scene,key);beep('buy');
+        refreshShop();
+      });
+      list.appendChild(el);
+    }
+  }
+  function refreshShop(){
+    document.querySelectorAll('.shop-item').forEach(el=>{
+      const c=upg.compCost(el.dataset.type);
+      el.classList.toggle('na',!!(S.economyOn&&S.money<c));
+      el.querySelector('.scost').textContent=S.economyOn?'$'+c:'Free';
+    });
+  }
+
+  // ---- upgrades ----
+  function buildUpgrades(){
+    const list=document.getElementById('upg-list');list.innerHTML='';
+    for(const u of UPGRADES){
+      const owned=S.upgrades[u.id];const can=S.money>=u.cost;
+      const el=document.createElement('div');
+      el.className='upg'+(owned?' owned':'');
+      el.innerHTML=`<div><strong style="color:#c8d8f0">${u.name}</strong><br><small style="color:#5a7a99">${u.desc}</small></div>
+        <div>${owned?'<span style="color:#00ff9c">✓</span>':`<button class="upg-buy" ${!can?'disabled':''} onclick="window._buyUpg('${u.id}',${u.cost})">\$${u.cost}</button>`}</div>`;
+      list.appendChild(el);
+    }
+  }
+  window._buyUpg=function(id,cost){
+    if(S.upgrades[id]||S.money<cost)return;
+    S.money-=cost;S.upgrades[id]=true;
+    const u=UPGRADES.find(x=>x.id===id);
+    if(u){notify('Unlocked: '+u.name);beep('obj');}
+    buildUpgrades();refreshShop();
+  };
+
+  // ---- UI setup ----
+  function setupUI(scene){
+    function exitTools(){
+      connMode=false;delMode=false;
+      document.getElementById('tool-connect').classList.remove('active');
+      document.getElementById('tool-delete').classList.remove('active','del');
+      if(selNode?.clearTint)selNode.clearTint();selNode=null;
+    }
+
+    document.getElementById('tool-connect').addEventListener('click',()=>{
+      const next=!connMode;exitTools();connMode=next;
+      document.getElementById('tool-connect').classList.toggle('active',connMode);
+      setStatus(connMode?'Connect mode — click two components to wire them.':'Ready.');
+    });
+    document.getElementById('tool-delete').addEventListener('click',()=>{
+      const next=!delMode;exitTools();delMode=next;
+      document.getElementById('tool-delete').classList.toggle('del',delMode);
+      setStatus(delMode?'Delete mode — click a component or wire to remove it.':'Ready.');
+    });
+
+    // Themes
+    function applyTheme(t){
+      S.theme=t;
+      ['circuit','space','dark'].forEach(x=>document.getElementById('th-'+x).classList.toggle('on',x===t));
+      if(bgTile)bgTile.setVisible(t==='circuit');
+      starsG.setVisible(t==='space'||t==='circuit');
+      if(t==='circuit')scene.cameras.main.setBackgroundColor('#060c12');
+      else if(t==='space'){scene.cameras.main.setBackgroundColor('#040810');bgG.clear();}
+      else{scene.cameras.main.setBackgroundColor('#080c14');bgG.clear();}
+    }
+    document.getElementById('th-circuit').addEventListener('click',()=>applyTheme('circuit'));
+    document.getElementById('th-space').addEventListener('click',()=>applyTheme('space'));
+    document.getElementById('th-dark').addEventListener('click',()=>applyTheme('dark'));
+
+    document.getElementById('tog-bp').addEventListener('click',()=>{
+      S.backplaneOn=!S.backplaneOn;
+      document.getElementById('tog-bp').classList.toggle('on',S.backplaneOn);redraw();
+    });
+    document.getElementById('tog-stars').addEventListener('click',()=>{
+      S.shootingStars=!S.shootingStars;
+      document.getElementById('tog-stars').classList.toggle('on',S.shootingStars);
+    });
+    document.getElementById('btn-econ').addEventListener('click',()=>{
+      S.economyOn=!S.economyOn;
+      document.getElementById('btn-econ').textContent='Economy: '+(S.economyOn?'ON':'OFF');
+      document.getElementById('btn-econ').classList.toggle('on',S.economyOn);
+      refreshShop();
+    });
+    document.getElementById('btn-upgrades').addEventListener('click',()=>{buildUpgrades();document.getElementById('umodal').classList.add('open');});
+    document.getElementById('umodal').addEventListener('click',e=>{if(e.target===document.getElementById('umodal'))document.getElementById('umodal').classList.remove('open');});
+    document.getElementById('btn-reset').addEventListener('click',()=>{
+      if(!confirm('Reset everything?'))return;
+      S.money=100;S.totalEarned=0;S.time=0;S.heat=0;S.powerCap=300;
+      S.objectives=new Set();S.upgrades={};S.throughput=0;
+      components.forEach(c=>{if(c._lbl)c._lbl.destroy();c.destroy();});
+      components=[];lines=[];exitTools();
+      const bb=spawnComp(scene,'baseboard');bb.x=scene.scale.width/2;bb.y=scene.scale.height/2;syncPorts(bb);
+      redraw();refreshShop();notify('Game reset','warn');
+    });
+
+    scene.input.on('pointerdown',pointer=>{
+      if(pointer.rightButtonDown())deleteLineNear(pointer.worldX,pointer.worldY);
+      else if(delMode)deleteLineNear(pointer.worldX,pointer.worldY);
+    });
+    scene.input.on('pointermove',pointer=>{
+      cursor.x=pointer.worldX;cursor.y=pointer.worldY;
+      const gc=document.getElementById('game-container').getBoundingClientRect();
+      const tt=document.getElementById('tt');
+      tt.style.left=(gc.left+pointer.x+16)+'px';
+      tt.style.top=(gc.top+pointer.y+8)+'px';
+    });
+    scene.input.mouse.disableContextMenu();
+
+    scene.input.on('dragstart',(_p,obj)=>{
+      if(obj.type==='retimer'){obj._dragging=true;detachRetimer(obj);}
+      obj.setDepth(10);if(obj._lbl)obj._lbl.setDepth(11);
+    });
+    scene.input.on('drag',(_p,obj,dx,dy)=>{
+      obj.x=dx;obj.y=dy;
+      if(obj.type==='baseboard')syncPorts(obj);
+      if(obj._lbl)obj._lbl.setPosition(dx,dy+(obj.type==='memory'?32:obj.type==='baseboard'?42:28));
+      redraw();
+    });
+    scene.input.on('dragend',(_p,obj)=>{
+      obj.setDepth(obj.type==='baseboard'?2:3);if(obj._lbl)obj._lbl.setDepth(6);
+      if(obj.type==='retimer'){
+        obj._dragging=false;
+        const best=nearestLine(obj.x,obj.y);
+        if(best&&best.dist<=14&&best.t>0.05&&best.t<0.95)attachRetimer(obj,best.line,best.t);
+      }
+      redraw();
+    });
+
+    scene.scale.on('resize',gs=>{
+      if(bgTile){bgTile.setSize(gs.width,gs.height);bgTile.setTileScale(gs.width/512,gs.height/512);}
+      initStars(gs.width,gs.height);redraw();
+    });
+
+    document.addEventListener('keydown',e=>{
+      if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON')return;
+      if(e.key==='c'||e.key==='C')document.getElementById('tool-connect').click();
+      if(e.key==='d'||e.key==='D')document.getElementById('tool-delete').click();
+      if(e.key==='Escape'){exitTools();setStatus('Ready.');}
+    });
+  }
+
+  // ================================================================
+  // PHASER SCENE
+  // ================================================================
+  function preload(){
+    // Feed the pre-converted data URIs to Phaser's standard loader.
+    // data: URIs need no XHR, no CORS, no server — work on file:// perfectly.
+    for(const [key, uri] of Object.entries(IMG_DATA_URIS)){
+      this.load.image(key, uri);
+    }
+  }
+
+  function create(){
+    const scene=this;
+    const W=scene.scale.width,H=scene.scale.height;
+
+    const loaded=Object.keys(IMG_DATA_URIS).length;
+    const total=Object.keys(IMG_SRCS).length;
+    setStatus('Ready — buy components from the shop. ('+loaded+'/'+total+' assets loaded)');
+
+    // Background layers
+    bgG    =scene.add.graphics().setDepth(-10);
+    starsG =scene.add.graphics().setDepth(-9);
+
+    // Circuit background tile
+    if(scene.textures.exists('bgcircuit')){
+      bgTile=scene.add.tileSprite(W/2,H/2,W,H,'bgcircuit').setDepth(-10).setAlpha(.55);
+      bgTile.setTileScale(W/512,H/512);
+    }
+
+    wireG   =scene.add.graphics().setDepth(0);
+    glowG   =scene.add.graphics().setDepth(1);
+    // sprites at depth 2-3
+    procG   =scene.add.graphics().setDepth(3);
+    overlayG=scene.add.graphics().setDepth(4);
+    flowG   =scene.add.graphics().setDepth(5);
+
+    initStars(W,H);
+    setupUI(scene);
+    buildShop(scene);
+    checkObjectives();
+
+    // Start with one baseboard
+    const bb=spawnComp(scene,'baseboard');
+    bb.x=W/2;bb.y=H/2;syncPorts(bb);
+    redraw();
+    notify('Data Center Architect v2 — good luck!');
+  }
+
+  function update(_t,delta){
+    const dt=delta/1000;
+    S.time+=dt;
+
+    if(S.economyOn){
+      const inc=S.throughput*upg.incomeGPU()+0.05;
+      S.money+=inc*dt;S.totalEarned+=inc*dt;
+    }
+
+    // Heat dynamics
+    const workGPUs=components.filter(n=>n.isPart&&n.type==='gpu'&&n.working).length;
+    const fans=components.filter(n=>n.isPart&&n.type==='cooling').length;
+    S.heat=Math.max(0,Math.min(upg.maxHeat()*1.5,S.heat+(workGPUs*2.5-fans*5)*dt));
+
+    // Background drawing
+    const W=this.scale.width,H=this.scale.height;
+    if(S.theme==='circuit'){
+      // Slow tile pan for circuit bg
+      if(bgTile){bgTile.tilePositionX+=8*dt;bgTile.tilePositionY+=4*dt;}
+      // Dim overlay
+      bgG.clear();bgG.fillStyle(0x030608,.55);bgG.fillRect(0,0,W,H);
+    } else if(S.theme==='space'){
+      bgG.clear();bgG.fillStyle(0x040810,1);bgG.fillRect(0,0,W,H);
+    } else {
+      bgG.clear();bgG.fillStyle(0x080c14,1);bgG.fillRect(0,0,W,H);
+    }
+
+    // Stars overlay (circuit + space themes)
+    if(S.theme==='circuit'||S.theme==='space'){
+      starsG.clear();
+      drawStars(starsG,dt,W,H);
+    } else {
+      starsG.clear();
+    }
+
+    drawFlow(dt);
+    refreshShop();
+  }
+
+  const config={
+    type:Phaser.AUTO,
+    backgroundColor:'#060c12',
+    parent:'game-container',
+    scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH},
+    scene:{preload,create,update},
+  };
+  window._game=new Phaser.Game(config);
+}
+
+// ---- Load Phaser, then start game ----
+const SRCS=['./phaser.min.js','./phaser.js',
+  'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js'];
+let si=0;
+function loadP(){
+  if(si>=SRCS.length){setStatus('Error: Phaser.js failed to load');return;}
+  const s=document.createElement('script');
+  s.onload=()=>{if(typeof Phaser!=='undefined')initGame();else{si++;loadP();}};
+  s.onerror=()=>{si++;loadP();};
+  s.src=SRCS[si++];
+  document.head.appendChild(s);
+}
+function setStatus(m){const el=document.getElementById('status-msg');if(el)el.textContent=m;}
+
+// Step 1: pre-load all images via DOM Image (works on file://)
+// Step 2: once images are ready, load Phaser and start the game
+preloadAllImages().then(()=>loadP());
+</script>
+</body>
+</html>
