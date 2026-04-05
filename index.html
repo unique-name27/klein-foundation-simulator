@@ -1,1136 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Data Center Architect v2</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klein Foundation HQ — Jaw Harp Simulator</title>
 <style>
-:root{--bg:#060c12;--panel:#0b1018;--border:#1a2840;--accent:#00e5ff;--green:#00ff9c;--yellow:#ffd43b;--red:#ff4d4d;--text:#c8d8f0;--dim:#5a7a99}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;display:grid;grid-template-rows:54px 1fr 40px;grid-template-columns:176px 1fr 196px;height:100vh;overflow:hidden}
-#topbar{grid-column:1/-1;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:18px}
-#topbar h1{font-size:15px;color:var(--accent);text-shadow:0 0 12px var(--accent),0 0 24px rgba(0,229,255,.3);white-space:nowrap;letter-spacing:1px}
-.sg{display:flex;flex-direction:column;gap:1px}
-.sl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
-.sv{font-size:13px;font-weight:bold}
-.sv-y{color:var(--yellow)}.sv-g{color:var(--green)}.sv-o{color:#ff9f66}
-.bar-wrap{width:88px;height:6px;background:#111820;border-radius:3px;overflow:hidden;margin-top:3px}
-.bar-fill{height:100%;border-radius:3px;transition:width .25s}
-.bar-pw{background:linear-gradient(90deg,#ff9f66,#ff6b6b)}
-.bar-ht{background:linear-gradient(90deg,#ffd43b,#ff4d4d)}
-.top-btn{background:#0d1520;border:1px solid var(--border);border-radius:4px;color:var(--dim);padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace;transition:all .15s;white-space:nowrap}
-.top-btn:hover{border-color:var(--accent);color:var(--accent)}
-.top-btn.on{background:#071830;border-color:var(--accent);color:var(--accent);box-shadow:0 0 6px rgba(0,229,255,.2)}
-.top-btn.danger{border-color:#ff4d4d33;color:var(--red)}
-#left{background:var(--panel);border-right:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:5px;overflow-y:auto}
-.ptitle{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:2px;margin-top:5px}
-.tool-btn{background:#0d1520;border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 9px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;text-align:left;transition:all .15s;width:100%}
-.tool-btn:hover{border-color:var(--accent);color:var(--accent)}
-.tool-btn.active{background:#071830;border-color:var(--accent);color:var(--accent);box-shadow:0 0 8px rgba(0,229,255,.2)}
-.tool-btn.del{background:#1a0808;border-color:var(--red);color:var(--red)}
-.tog-row{display:flex;gap:3px}
-.tog{background:#0d1520;border:1px solid var(--border);border-radius:3px;color:var(--dim);padding:3px 0;font-size:9px;cursor:pointer;font-family:'Courier New',monospace;flex:1;text-align:center;transition:all .12s}
-.tog:hover{border-color:var(--accent)}.tog.on{background:#071830;border-color:var(--accent);color:var(--accent)}
-.srow{display:flex;justify-content:space-between;font-size:11px;padding:1px 0}
-.srow .lbl{color:var(--dim)}.srow .val{color:var(--text)}
-.obj-item{background:#0d1520;border:1px solid var(--border);border-radius:4px;padding:6px;font-size:10px;margin-bottom:3px}
-.obj-item.done{border-color:var(--green);background:#061410}
-.obj-title{font-weight:bold;margin-bottom:1px}
-.obj-item.done .obj-title{color:var(--green)}
-.obj-reward{color:var(--yellow);font-size:9px}
-#game-container{position:relative;overflow:hidden}
-#right{background:var(--panel);border-left:1px solid var(--border);padding:10px;overflow-y:auto}
-.shop-item{display:flex;align-items:center;gap:7px;padding:6px 7px;background:#0d1520;border:1px solid var(--border);border-radius:6px;margin-bottom:4px;cursor:pointer;transition:all .15s}
-.shop-item:hover{border-color:var(--accent);background:#0a1828}
-.shop-item.na{opacity:.35;pointer-events:none}
-.sicon{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.sinfo{flex:1;min-width:0}
-.sname{font-size:11px;font-weight:bold}
-.scost{font-size:10px;color:var(--yellow)}
-.sdesc{font-size:9px;color:var(--dim);margin-top:1px}
-.sstat{font-size:9px;color:#ff9f66}
-#bottombar{grid-column:1/-1;background:var(--panel);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:14px;font-size:10px}
-#status-msg{color:var(--dim)}
-.kbd{color:var(--dim);margin-left:auto}.kbd span{color:var(--accent)}
-#tt{position:fixed;background:#0b1018;border:1px solid var(--accent);border-radius:6px;padding:7px 11px;font-size:10px;pointer-events:none;z-index:1000;display:none;max-width:190px;line-height:1.6;box-shadow:0 0 16px rgba(0,229,255,.15)}
-#tt.v{display:block}#tt-title{font-weight:bold;color:var(--accent);margin-bottom:3px}#tt-body{color:var(--dim)}
-#notifs{position:fixed;top:64px;right:206px;z-index:1000;pointer-events:none}
-.notif{background:#0b1018;border-left:3px solid var(--green);padding:5px 11px;margin-bottom:4px;border-radius:0 4px 4px 0;font-size:11px;animation:sin .25s ease,fout .4s ease 2.6s forwards}
-.notif.warn{border-left-color:var(--yellow)}.notif.err{border-left-color:var(--red)}
-@keyframes sin{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes fout{from{opacity:1}to{opacity:0;transform:translateX(16px)}}
-#umodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;align-items:center;justify-content:center}
-#umodal.open{display:flex}
-.mbox{background:var(--panel);border:1px solid var(--accent);border-radius:10px;padding:22px;max-width:460px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 0 40px rgba(0,229,255,.12)}
-.mtitle{font-size:15px;color:var(--accent);margin-bottom:14px}
-.upg{display:flex;justify-content:space-between;align-items:center;padding:9px;border:1px solid var(--border);border-radius:5px;margin-bottom:6px}
-.upg.owned{border-color:var(--green);background:#061410;opacity:.6}
-.upg-buy{background:var(--accent);color:#000;border:none;border-radius:3px;padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace;font-weight:bold}
-.upg-buy:disabled{background:#222;color:#444;cursor:not-allowed}
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;background:#0a0604;font-family:'Crimson Text',serif;cursor:crosshair}
+canvas#gc{width:100vw;height:100vh;display:block}
+#ch{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:22px;border:2px solid rgba(255,200,100,.4);border-radius:50%;z-index:11;pointer-events:none}
+#ch::before,#ch::after{content:'';position:absolute;background:rgba(255,200,100,.4)}
+#ch::before{width:8px;height:2px;top:50%;left:50%;transform:translate(-50%,-50%)}
+#ch::after{width:2px;height:8px;top:50%;left:50%;transform:translate(-50%,-50%)}
+#to{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(10,6,4,.85),rgba(10,6,4,.98));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity 1s}
+#to.h{opacity:0;pointer-events:none}
+.fb{font-family:'Cinzel',serif;font-size:.75rem;color:#8a7a60;letter-spacing:.35em;text-transform:uppercase;margin-bottom:.8rem;border:1px solid rgba(232,168,64,.15);padding:6px 20px}
+#to h1{font-family:'Cinzel',serif;font-size:3rem;color:#e8a840;text-shadow:0 0 40px rgba(232,168,64,.3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.3rem}
+#to h2{font-family:'Crimson Text',serif;font-size:1.1rem;color:#b87a30;font-style:italic;margin-bottom:.5rem;font-weight:400}
+.fs2{font-family:'Cinzel',serif;font-size:.7rem;color:#6a5a40;letter-spacing:.2em;margin-bottom:1.5rem}
+.st{color:#8a7a60;font-size:.9rem;margin-bottom:2rem;text-align:center;line-height:1.8}
+#sb{font-family:'Cinzel',serif;font-size:1rem;padding:13px 40px;background:linear-gradient(135deg,#8a5a20,#c4842c,#8a5a20);color:#1a0e04;border:2px solid #e8a840;cursor:pointer;letter-spacing:.2em;text-transform:uppercase;transition:all .3s}
+#sb:hover{background:linear-gradient(135deg,#c4842c,#e8a840,#c4842c);box-shadow:0 0 30px rgba(232,168,64,.4)}
+#ct{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:12;pointer-events:none}
+.ck{display:flex;align-items:center;gap:4px;color:rgba(255,200,100,.4);font-size:.68rem}
+.ky{background:rgba(255,200,100,.08);border:1px solid rgba(255,200,100,.18);padding:2px 5px;border-radius:3px;font-family:'Cinzel',serif;font-size:.56rem;color:rgba(255,200,100,.55)}
+#db{position:fixed;bottom:55px;left:50%;transform:translateX(-50%);width:min(640px,92vw);background:linear-gradient(180deg,rgba(20,12,6,.96),rgba(10,6,3,.98));border:1px solid rgba(232,168,64,.3);border-radius:8px;padding:14px 16px;z-index:20;pointer-events:all;display:none;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+#db.v{display:block}
+#ds{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+#dt{color:#d4c4a8;font-size:.92rem;line-height:1.6;min-height:34px;white-space:pre-wrap}
+#dir{display:flex;gap:6px;margin-top:8px}
+#di{flex:1;background:rgba(255,200,100,.05);border:1px solid rgba(232,168,64,.2);border-radius:4px;padding:7px 10px;color:#d4c4a8;font-family:'Crimson Text',serif;font-size:.9rem;outline:none}
+#di:focus{border-color:rgba(232,168,64,.5)}
+#dse{background:linear-gradient(135deg,#6a4a18,#8a5a20);border:1px solid rgba(232,168,64,.4);color:#e8a840;padding:7px 13px;border-radius:4px;cursor:pointer;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.1em}
+#dc{position:absolute;top:6px;right:10px;background:none;border:none;color:rgba(232,168,64,.4);font-size:1rem;cursor:pointer}
+#ip{position:fixed;top:44%;left:50%;transform:translate(-50%,-50%);color:#e8a840;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.08em;background:rgba(10,6,4,.75);padding:5px 13px;border-radius:4px;border:1px solid rgba(232,168,64,.2);z-index:15;pointer-events:none;display:none;text-align:center}
+#ho{position:fixed;top:46%;left:50%;transform:translate(-50%,-50%);z-index:25;pointer-events:none;display:none}
+.ht{font-family:'Cinzel',serif;color:#e8a840;font-size:1.3rem;text-shadow:0 0 20px rgba(232,168,64,.5);animation:hp .5s ease-out}
+@keyframes hp{0%{transform:scale(1.3);opacity:0}100%{transform:scale(1);opacity:1}}
+#li{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);color:rgba(232,168,64,.6);font-family:'Crimson Text',serif;font-style:italic;z-index:21;display:none}
+#li.v{display:block}
+#mm{position:fixed;top:10px;right:10px;width:130px;height:130px;background:rgba(10,6,4,.85);border:1px solid rgba(232,168,64,.2);border-radius:5px;z-index:12;pointer-events:none;overflow:hidden}
+#mm canvas{width:100%;height:100%}
+#ll{position:fixed;top:12px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;color:rgba(232,168,64,.4);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;z-index:12;pointer-events:none}
+.nl{position:absolute;font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap;transform:translate(-50%,-100%);pointer-events:none}
 </style>
 </head>
 <body>
-
-<div id="topbar">
-  <h1>⬡ DATA CENTER ARCHITECT</h1>
-  <div class="sg"><div class="sl">Balance</div><div class="sv sv-y" id="ui-money">$100</div></div>
-  <div class="sg"><div class="sl">Income</div><div class="sv sv-g" id="ui-income">--</div></div>
-  <div class="sg">
-    <div class="sl">Power <span id="ui-pw-v" style="color:var(--text)">0/500W</span></div>
-    <div class="bar-wrap"><div class="bar-fill bar-pw" id="ui-pw-b" style="width:0%"></div></div>
-  </div>
-  <div class="sg">
-    <div class="sl">Heat <span id="ui-ht-v" style="color:var(--text)">0°</span></div>
-    <div class="bar-wrap"><div class="bar-fill bar-ht" id="ui-ht-b" style="width:0%"></div></div>
-  </div>
-  <div class="sg"><div class="sl">Working GPUs</div><div class="sv sv-g" id="ui-gpus">0</div></div>
-  <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
-    <button class="top-btn" id="btn-econ">Economy: OFF</button>
-    <button class="top-btn" id="btn-upgrades">⚡ Upgrades</button>
-    <button class="top-btn danger" id="btn-reset">Reset</button>
-  </div>
+<canvas id="gc"></canvas><div id="ch"></div>
+<div id="ll">Klein Foundation HQ</div>
+<div id="mm"><canvas id="mc" width="130" height="130"></canvas></div>
+<div id="ct"><span class="ck"><span class="ky">WASD</span>Move</span><span class="ck"><span class="ky">← →</span>Look</span><span class="ck"><span class="ky">E</span>Talk</span><span class="ck"><span class="ky">Space</span>Harp</span></div>
+<div id="ip"></div><div id="ho"><div class="ht"></div></div>
+<div id="nl" style="position:fixed;inset:0;pointer-events:none;z-index:13"></div>
+<div id="db"><button id="dc">✕</button><div id="ds"></div><div id="dt"></div><div id="dir"><input id="di" type="text" placeholder="Speak..."/><button id="dse">SEND</button></div></div>
+<div id="li">Thinking...</div>
+<div id="to">
+<div class="fb">Klein Foundation</div>
+<h1>The Forge</h1>
+<h2>International Jaw Harp Blacksmith Workshop</h2>
+<div class="fs2">Klein Foundation Headquarters — Training Simulator</div>
+<div class="st">Meet master smiths Luca Boggio, Yuriy Vashkovych,<br>Alexander Orenchenko &amp; Simen Roheim Iversen.<br>Speak with Britney &amp; Tiffany. Press Space to play.</div>
+<button id="sb">Enter the Forge</button>
 </div>
-
-<div id="left">
-  <div class="ptitle">Tools</div>
-  <button class="tool-btn" id="tool-connect">[ C ]  Connect Mode</button>
-  <button class="tool-btn" id="tool-delete">[ D ]  Delete Mode</button>
-  <div class="ptitle">Background</div>
-  <div class="tog-row">
-    <button class="tog on" id="th-circuit">Circuit</button>
-    <button class="tog" id="th-space">Space</button>
-    <button class="tog" id="th-dark">Dark</button>
-  </div>
-  <div class="tog-row">
-    <button class="tog on" id="tog-bp">Backplane</button>
-    <button class="tog on" id="tog-stars">Stars</button>
-  </div>
-  <div class="ptitle">Stats</div>
-  <div class="srow"><span class="lbl">Connected</span><span class="val" id="st-conn">0</span></div>
-  <div class="srow"><span class="lbl">Working GPUs</span><span class="val" id="st-gpus">0</span></div>
-  <div class="srow"><span class="lbl">Total Earned</span><span class="val" id="st-earned">$0</span></div>
-  <div class="srow"><span class="lbl">Time</span><span class="val" id="st-time">0:00</span></div>
-  <div class="ptitle">Objectives</div>
-  <div id="obj-list"></div>
-</div>
-
-<div id="game-container"></div>
-
-<div id="right">
-  <div class="ptitle">Shop</div>
-  <div id="shop-list"></div>
-</div>
-
-<div id="bottombar">
-  <div id="status-msg">Loading assets…</div>
-  <div class="kbd"><span>C</span> Connect · <span>D</span> Delete · <span>ESC</span> Cancel · <span>Right-click</span> Delete wire</div>
-</div>
-
-<div id="tt"><div id="tt-title"></div><div id="tt-body"></div></div>
-<div id="notifs"></div>
-
-<div id="umodal">
-  <div class="mbox">
-    <div class="mtitle">⚡ Research &amp; Upgrades</div>
-    <div id="upg-list"></div>
-    <button class="tool-btn" style="margin-top:10px" onclick="document.getElementById('umodal').classList.remove('open')">Close</button>
-  </div>
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// ================================================================
-// DATA CENTER ARCHITECT v2
-// ================================================================
+(function(){
+"use strict";
+var AC=window.AudioContext||window.webkitAudioContext,ac;
+function ia(){if(!ac)ac=new AC()}
+function harpSnd(){ia();var t=ac.currentTime,bf=80+Math.random()*40;
+[['sawtooth',bf,.25,1.4],['triangle',bf*3,.12,1],['sine',bf*5,.05,.5]].forEach(function(p){
+var o=ac.createOscillator(),g=ac.createGain();o.type=p[0];
+o.frequency.setValueAtTime(p[1],t);o.frequency.exponentialRampToValueAtTime(p[1]*.85,t+p[3]*.5);
+g.gain.setValueAtTime(p[2],t);g.gain.exponentialRampToValueAtTime(.001,t+p[3]);
+o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+p[3])});
+var bs=ac.sampleRate*.08,nb=ac.createBuffer(1,bs,ac.sampleRate),d=nb.getChannelData(0);
+for(var i=0;i<bs;i++)d[i]=(Math.random()*2-1)*.25;
+var ns=ac.createBufferSource();ns.buffer=nb;
+var ng=ac.createGain();ng.gain.setValueAtTime(.08,t);ng.gain.exponentialRampToValueAtTime(.001,t+.08);
+var bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=2000;bp.Q.value=5;
+ns.connect(bp);bp.connect(ng);ng.connect(ac.destination);ns.start(t);ns.stop(t+.08)}
 
-// ---- Image pre-loading: DOM Image → Canvas dataURI → Phaser loader ----
-//
-// Why this works on file://:
-//   • new Image() + img.src loads local files without XHR (no file:// restriction)
-//   • canvas.toDataURL() works for same-origin file:// images (no canvas taint)
-//   • this.load.image(key, dataURI) in Phaser's preload() accepts data: URIs
-//     directly — zero XHR, zero CORS, works everywhere.
-//
-// CDN fallbacks kick in only when local files are missing (e.g. web deployment).
+function anvilSnd(){ia();var t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();
+o.type='square';o.frequency.setValueAtTime(800+Math.random()*400,t);
+o.frequency.exponentialRampToValueAtTime(200,t+.12);
+g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+.15);
+o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.15)}
 
-const IMG_SRCS = {
-  gpu:           {local:'gpu.png',               cdn:'https://i.postimg.cc/mtN9HFfK/gpu.png'},
-  cpu:           {local:'cpu.png',               cdn:'https://i.postimg.cc/3k8vCJ3N/cpu.png'},
-  memory:        {local:'memory.png',            cdn:'https://i.postimg.cc/Wd5J9L4n/memory.png'},
-  retimer:       {local:'retimer.png',           cdn:'https://i.postimg.cc/dkykthjH/retimer.png'},
-  switch:        {local:'switch.png',            cdn:'https://i.postimg.cc/64x77BH9/switch.png'},
-  baseboard:     {local:'baseboard.png',         cdn:'https://i.postimg.cc/H80rXFKb/baseboard.png'},
-  networking:    {local:'networking.png',        cdn:'https://i.postimg.cc/t1fnj3Wn/networking.png'},
-  memoryExpander:{local:'memory%20expander.png', cdn:'https://i.postimg.cc/67T4gj2N/memory-expander.png'},
-  bgcircuit:     {local:'background.png',        cdn:null},
-};
+var canvas=document.getElementById('gc');
+var R=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+R.setSize(window.innerWidth,window.innerHeight);
+R.setPixelRatio(Math.min(window.devicePixelRatio,2));
+R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=.8;
+var S=new THREE.Scene();S.background=new THREE.Color(0x0a0604);
+S.fog=new THREE.FogExp2(0x0a0604,.018);
+var cam=new THREE.PerspectiveCamera(65,window.innerWidth/window.innerHeight,.1,120);
+cam.position.set(0,1.7,10);
 
-// Populated before Phaser starts: key → data URI string
-const IMG_DATA_URIS = {};
-
-function imgToDataURI(img) {
-  try {
-    const c = document.createElement('canvas');
-    c.width = img.naturalWidth; c.height = img.naturalHeight;
-    c.getContext('2d').drawImage(img, 0, 0);
-    return c.toDataURL('image/png');
-  } catch(e) { return null; }
+// Safe mesh adder — no Object.assign
+function mb(w,h,d,mat,x,y,z,rx,ry,rz){
+  var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z);
+  if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);
+  m.castShadow=true;m.receiveShadow=true;S.add(m);return m;
+}
+function mc2(rt,rb,h,seg,mat,x,y,z,rx,ry,rz){
+  var m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);
+  m.position.set(x,y,z);
+  if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);
+  m.castShadow=true;S.add(m);return m;
+}
+function addTo(parent,geo,mat,x,y,z,rx,ry,rz){
+  var m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);
+  if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);
+  parent.add(m);return m;
+}
+function pl(mat,w,h,x,y,z){
+  var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);
+  m.position.set(x,y,z);S.add(m);return m;
 }
 
-function loadOneImg(key, localSrc, cdnSrc) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const uri = imgToDataURI(img);
-      if (uri) { IMG_DATA_URIS[key] = uri; resolve(); return; }
-      // canvas tainted (shouldn't happen for local file://) — try CDN with CORS
-      tryCDN();
-    };
-    img.onerror = () => tryCDN();
-    img.src = localSrc;
+// Materials
+var stone=new THREE.MeshStandardMaterial({color:0x3a3228,roughness:.9});
+var wood=new THREE.MeshStandardMaterial({color:0x4a3520,roughness:.85});
+var dkw=new THREE.MeshStandardMaterial({color:0x2a1a10,roughness:.8});
+var metal=new THREE.MeshStandardMaterial({color:0x666666,roughness:.3,metalness:.9});
+var iron=new THREE.MeshStandardMaterial({color:0x444444,roughness:.5,metalness:.8});
+var brick=new THREE.MeshStandardMaterial({color:0x6b3a2a,roughness:.95});
+var skin=new THREE.MeshStandardMaterial({color:0xc49a6c,roughness:.8});
+var goldM=new THREE.MeshStandardMaterial({color:0xc4942c,metalness:.8,roughness:.3});
+var bronzeM=new THREE.MeshStandardMaterial({color:0x8b6914,metalness:.7,roughness:.4});
 
-    function tryCDN() {
-      if (!cdnSrc) { resolve(); return; }
-      const img2 = new Image();
-      img2.crossOrigin = 'anonymous';
-      img2.onload = () => {
-        const uri = imgToDataURI(img2);
-        if (uri) IMG_DATA_URIS[key] = uri;
-        resolve();
-      };
-      img2.onerror = () => resolve();
-      img2.src = cdnSrc;
-    }
-  });
+// Lights
+S.add(new THREE.AmbientLight(0x1a1008,.5));
+var fL=new THREE.PointLight(0xff6620,3,20);fL.position.set(-5,1.5,-5);fL.castShadow=true;S.add(fL);
+var fL2=new THREE.PointLight(0xff5500,1.5,10);fL2.position.set(6,1.5,-4);S.add(fL2);
+var l1=new THREE.PointLight(0xffa050,.7,14);l1.position.set(5,2.5,0);S.add(l1);
+var l2=new THREE.PointLight(0x442200,.8,14);l2.position.set(0,5,2);S.add(l2);
+var l3=new THREE.PointLight(0xffa050,.7,14);l3.position.set(5,2.5,6);S.add(l3);
+var l4=new THREE.PointLight(0xffa050,.5,14);l4.position.set(0,1,14.5);S.add(l4);
+var wL=new THREE.SpotLight(0x4466aa,.5,30,Math.PI/5,.5);wL.position.set(10,6,-4);wL.target.position.set(0,0,0);S.add(wL);S.add(wL.target);
+var stL=new THREE.SpotLight(0xffe8a0,.8,15,Math.PI/6,.4);stL.position.set(0,6,12);stL.target.position.set(0,2,14.5);S.add(stL);S.add(stL.target);
+var cndL=new THREE.PointLight(0xffaa44,.3,4);cndL.position.set(5,1.3,6);S.add(cndL);
+var sgL=new THREE.SpotLight(0xffddaa,1.5,12,Math.PI/4,.3);sgL.position.set(0,2,-6);sgL.target.position.set(0,4,-9.8);S.add(sgL);S.add(sgL.target);
+
+// Floor + Walls
+var fl=new THREE.Mesh(new THREE.PlaneGeometry(30,36),stone);
+fl.rotation.x=-Math.PI/2;fl.receiveShadow=true;S.add(fl);
+mb(30,6,.3,stone,0,3,-10);
+mb(.3,6,36,stone,-10,3,8);
+mb(.3,6,36,stone,10,3,8);
+mb(5,6,.3,stone,-7.5,3,18);
+mb(5,6,.3,stone,7.5,3,18);
+mb(6,2,.3,stone,0,5,18);
+for(var i=-4;i<=8;i++)mb(20,.2,.25,dkw,0,5.8,i*2);
+
+// ═══ KLEIN FOUNDATION WALL SIGN — Canvas Texture ═══
+var signCv=document.createElement('canvas');signCv.width=1024;signCv.height=384;
+var sx=signCv.getContext('2d');
+sx.fillStyle='#0e0804';sx.fillRect(0,0,1024,384);
+sx.strokeStyle='#c4942c';sx.lineWidth=6;sx.strokeRect(12,12,1000,360);
+sx.strokeStyle='#8a6a1c';sx.lineWidth=2;sx.strokeRect(20,20,984,344);
+sx.fillStyle='#c4942c';sx.textAlign='center';sx.textBaseline='middle';
+sx.font='900 74px Cinzel,serif';sx.fillText('KLEIN',512,120);
+sx.font='700 64px Cinzel,serif';sx.fillText('FOUNDATION',512,220);
+sx.font='400 28px Cinzel,serif';sx.fillStyle='#8a7a50';
+sx.fillText('— HEADQUARTERS —',512,315);
+sx.strokeStyle='#c4942c';sx.lineWidth=1;
+sx.beginPath();sx.moveTo(180,165);sx.lineTo(844,165);sx.stroke();
+sx.beginPath();sx.moveTo(180,260);sx.lineTo(844,260);sx.stroke();
+var signTex=new THREE.CanvasTexture(signCv);
+var signMesh=new THREE.Mesh(new THREE.PlaneGeometry(12,4.5),
+  new THREE.MeshStandardMaterial({map:signTex,roughness:.85,metalness:.1}));
+signMesh.position.set(0,3.8,-9.8);S.add(signMesh);
+mb(12,.1,.1,goldM,0,6.05,-9.74);
+mb(12,.1,.1,goldM,0,1.55,-9.74);
+mb(.1,4.5,.1,goldM,-6,3.8,-9.74);
+mb(.1,4.5,.1,goldM,6,3.8,-9.74);
+
+// ═══ JOHN KLEIN EQUESTRIAN STATUE ═══
+var stG=new THREE.Group();
+addTo(stG,new THREE.BoxGeometry(3.2,.7,2.2),stone,0,.35,0);
+addTo(stG,new THREE.BoxGeometry(2.8,.45,1.8),new THREE.MeshStandardMaterial({color:0x4a4038,roughness:.85}),0,.93,0);
+// Plaque with text
+var plqCv=document.createElement('canvas');plqCv.width=256;plqCv.height=64;
+var px=plqCv.getContext('2d');
+px.fillStyle='#1a1008';px.fillRect(0,0,256,64);
+px.fillStyle='#c4942c';px.font='bold 22px Cinzel,serif';px.textAlign='center';px.textBaseline='middle';
+px.fillText('JOHN KLEIN',128,32);
+var plqMat=new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(plqCv),roughness:.7,metalness:.3});
+addTo(stG,new THREE.PlaneGeometry(2,.5),plqMat,0,.93,.96);
+// Horse body
+addTo(stG,new THREE.BoxGeometry(1.8,.75,.75),bronzeM,0,2.15,0);
+addTo(stG,new THREE.SphereGeometry(.48,10,8),bronzeM,.7,2.25,0);
+addTo(stG,new THREE.SphereGeometry(.45,10,8),bronzeM,-.65,2.2,0);
+addTo(stG,new THREE.CylinderGeometry(.2,.28,.85,8),bronzeM,.95,2.8,0,0,0,.6);
+addTo(stG,new THREE.BoxGeometry(.6,.28,.24),bronzeM,1.2,3.2,0);
+addTo(stG,new THREE.BoxGeometry(.28,.16,.18),bronzeM,1.45,3.1,0);
+addTo(stG,new THREE.ConeGeometry(.04,.16,4),bronzeM,1.15,3.4,.12);
+addTo(stG,new THREE.ConeGeometry(.04,.16,4),bronzeM,1.15,3.4,-.12);
+// Legs
+var legPos=[[-0.55,-.22],[-.55,.22],[.5,-.22],[.5,.22]];
+for(var i=0;i<4;i++){
+  addTo(stG,new THREE.CylinderGeometry(.08,.07,.95,6),bronzeM,legPos[i][0],1.6,legPos[i][1]);
+  addTo(stG,new THREE.CylinderGeometry(.09,.1,.1,6),bronzeM,legPos[i][0],1.1,legPos[i][1]);
+}
+addTo(stG,new THREE.CylinderGeometry(.03,.07,.65,6),bronzeM,-1.05,1.95,0,0,0,.8);
+// Rider
+addTo(stG,new THREE.BoxGeometry(.5,.65,.32),bronzeM,.1,2.9,0);
+addTo(stG,new THREE.SphereGeometry(.15,10,8),bronzeM,.1,3.42,0);
+addTo(stG,new THREE.CylinderGeometry(.13,.15,.13,8),goldM,.1,3.58,0);
+for(var ci=0;ci<5;ci++){var ca=(ci/5)*Math.PI*2;addTo(stG,new THREE.ConeGeometry(.025,.12,4),goldM,.1+Math.sin(ca)*.12,3.7,Math.cos(ca)*.12)}
+addTo(stG,new THREE.BoxGeometry(.55,.75,.04),bronzeM,-.25,2.75,0);
+addTo(stG,new THREE.CylinderGeometry(.05,.04,.38,6),bronzeM,.4,2.75,.06,0,0,.5);
+addTo(stG,new THREE.CylinderGeometry(.05,.04,.38,6),bronzeM,-.2,2.75,-.06,0,0,-.5);
+addTo(stG,new THREE.CylinderGeometry(.02,.02,.65,6),goldM,.42,3.05,.08,0,0,-.2);
+addTo(stG,new THREE.SphereGeometry(.06,8,6),goldM,.52,3.32,.08);
+addTo(stG,new THREE.CylinderGeometry(.06,.05,.52,6),bronzeM,.1,2.4,.38,-.2,0,0);
+addTo(stG,new THREE.CylinderGeometry(.06,.05,.52,6),bronzeM,.1,2.4,-.38,.2,0,0);
+stG.position.set(0,0,14.5);S.add(stG);
+
+// ═══ FORGES ═══
+mb(2.5,1,2,brick,-5,.5,-6);mb(2.7,.15,2.2,iron,-5,1.05,-6);
+var fire=new THREE.Mesh(new THREE.ConeGeometry(.5,.8,8),new THREE.MeshStandardMaterial({color:0xff6600,emissive:0xff4400,emissiveIntensity:3,transparent:true,opacity:.8}));
+fire.position.set(-5,1.4,-6);S.add(fire);
+var embers=new THREE.Group();
+for(var i=0;i<25;i++){var em=new THREE.Mesh(new THREE.SphereGeometry(.03,4,4),new THREE.MeshStandardMaterial({color:0xff6600,emissive:0xff4400,emissiveIntensity:2+Math.random()*3,transparent:true,opacity:.7}));em.position.set(-5+(Math.random()-.5)*1.5,1.2+Math.random()*1.5,-6+(Math.random()-.5));em.userData={spd:.3+Math.random()*.7,off:Math.random()*Math.PI*2};embers.add(em)}
+S.add(embers);
+mb(1.5,3,.4,brick,-5,3.5,-9.7);
+mb(1.8,.8,1.5,brick,6,.4,-5.5);
+var fire2=new THREE.Mesh(new THREE.ConeGeometry(.35,.6,8),new THREE.MeshStandardMaterial({color:0xff6600,emissive:0xff4400,emissiveIntensity:2.5,transparent:true,opacity:.7}));
+fire2.position.set(6,1,-5.5);S.add(fire2);
+
+// Anvils
+mc2(.4,.5,.6,8,wood,-3,.3,-4);mb(.8,.35,.4,iron,-3,.78,-4);
+var hrn=new THREE.Mesh(new THREE.ConeGeometry(.15,.5,8),iron);hrn.rotation.z=Math.PI/2;hrn.position.set(-2.5,.78,-4);S.add(hrn);
+mc2(.35,.45,.5,8,wood,6,.25,-3);mb(.7,.3,.35,iron,6,.65,-3);
+
+// Workbenches
+mb(3,.1,1,wood,-7,1,-3);mb(.1,1,.1,wood,-8.3,.5,-2.6);mb(.1,1,.1,wood,-5.7,.5,-2.6);mb(.1,1,.1,wood,-8.3,.5,-3.4);mb(.1,1,.1,wood,-5.7,.5,-3.4);
+mb(2.5,.1,.8,wood,5,1,-6);mb(.1,.95,.1,dkw,3.8,.5,-5.6);mb(.1,.95,.1,dkw,6.2,.5,-5.6);mb(.1,.95,.1,dkw,3.8,.5,-6.4);mb(.1,.95,.1,dkw,6.2,.5,-6.4);
+for(var i=0;i<5;i++){var tl=mc2(.02,.02,.5+Math.random()*.3,6,i%2?wood:metal,-7.8+i*.35,1.15,-3.1,0,0,Math.PI/2+Math.random()*.2)}
+
+// Wall harps
+for(var i=0;i<8;i++){var jg=new THREE.Group();var fr=new THREE.Mesh(new THREE.TorusGeometry(.18,.02,8,12,Math.PI),metal);fr.rotation.z=Math.PI;jg.add(fr);
+for(var s=-1;s<=1;s+=2){var pr=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.2,6),metal);pr.position.set(s*.18,.1,0);jg.add(pr)}
+var tng=new THREE.Mesh(new THREE.BoxGeometry(.01,.3,.004),new THREE.MeshStandardMaterial({color:0x888888,metalness:.95,roughness:.2}));tng.position.y=.02;jg.add(tng);
+jg.position.set(-9.6,2.2+(i%4)*.5,-5+Math.floor(i/4)*3);jg.rotation.y=Math.PI/2;S.add(jg)}
+
+// Desk + items
+mb(3.5,.08,1.2,wood,5,.95,6);mb(.08,.95,.08,dkw,3.4,.47,5.5);mb(.08,.95,.08,dkw,6.6,.47,5.5);mb(.08,.95,.08,dkw,3.4,.47,6.5);mb(.08,.95,.08,dkw,6.6,.47,6.5);
+mb(.3,.06,.22,new THREE.MeshStandardMaterial({color:0x8b2020,roughness:.9}),4.2,1.02,6.1);
+mc2(.05,.06,.02,8,iron,5,1,6.3);mc2(.02,.025,.15,8,new THREE.MeshStandardMaterial({color:0xeee8d0,roughness:.9}),5,1.08,6.3);
+var cflame=new THREE.Mesh(new THREE.SphereGeometry(.015,6,6),new THREE.MeshStandardMaterial({color:0xffaa00,emissive:0xff8800,emissiveIntensity:3}));cflame.position.set(5,1.17,6.3);S.add(cflame);
+mc2(.4,.35,1,12,wood,7.5,.5,2);
+mb(1.5,.4,.5,wood,-3,.2,-8);
+mb(1.3,.05,.35,new THREE.MeshStandardMaterial({color:0x223344,roughness:.1,metalness:.3,transparent:true,opacity:.7}),-3,.38,-8);
+
+// Smoke
+var smk=[];for(var i=0;i<25;i++){var sp2=new THREE.Mesh(new THREE.SphereGeometry(.08,6,6),new THREE.MeshStandardMaterial({color:0x444444,transparent:true,opacity:.1}));sp2.position.set(-5+(Math.random()-.5)*.5,2+Math.random()*3,-8.5);sp2.userData={spd:.2+Math.random()*.4,sw:Math.random()*Math.PI*2,bx:sp2.position.x};S.add(sp2);smk.push(sp2)}
+
+// ═══ NPC BUILDER — no Object.assign ═══
+function mkP(o){
+  var g=new THREE.Group();
+  var sm=new THREE.MeshStandardMaterial({color:o.sh,roughness:.9});
+  var pm=new THREE.MeshStandardMaterial({color:o.pn,roughness:.9});
+  var hm=new THREE.MeshStandardMaterial({color:o.hr,roughness:.85});
+  // Torso
+  var torso=new THREE.Mesh(new THREE.BoxGeometry(o.tw||.5,.7,.3),sm);torso.position.y=1.25;torso.castShadow=true;g.add(torso);
+  // Apron
+  if(o.ap){var ap=new THREE.Mesh(new THREE.BoxGeometry(.45,.65,.02),new THREE.MeshStandardMaterial({color:o.ac||0x5a4030,roughness:.95}));ap.position.set(0,1.15,.16);g.add(ap)}
+  // Head
+  var hd=new THREE.Mesh(new THREE.SphereGeometry(.16,12,10),skin);hd.position.y=1.78;hd.castShadow=true;g.add(hd);
+  // Hair
+  if(o.hs==='s'){var hr=new THREE.Mesh(new THREE.SphereGeometry(.17,12,6,0,Math.PI*2,0,Math.PI/2),hm);hr.position.y=1.82;g.add(hr)}
+  else{var hr2=new THREE.Mesh(new THREE.SphereGeometry(.18,12,8,0,Math.PI*2,0,Math.PI*.6),hm);hr2.position.y=1.82;g.add(hr2);var bk=new THREE.Mesh(new THREE.BoxGeometry(.28,.35,.08),hm);bk.position.set(0,1.6,-.1);g.add(bk)}
+  if(o.bd){var bd=new THREE.Mesh(new THREE.SphereGeometry(.1,8,6,0,Math.PI*2,Math.PI/3,Math.PI/2),hm);bd.position.set(0,1.66,.07);g.add(bd)}
+  if(o.mu){var mu=new THREE.Mesh(new THREE.BoxGeometry(.12,.03,.04),hm);mu.position.set(0,1.72,.14);g.add(mu)}
+  // Arms
+  for(var sd=-1;sd<=1;sd+=2){var ua=new THREE.Mesh(new THREE.CylinderGeometry(.06,.055,.35,8),sm);ua.position.set(sd*.32,1.35,0);ua.rotation.z=sd*.35;g.add(ua);var fa=new THREE.Mesh(new THREE.CylinderGeometry(.045,.055,.3,8),skin);fa.position.set(sd*.45,1.08,.04);fa.rotation.z=sd*.15;g.add(fa)}
+  // Legs
+  for(var sd2=-1;sd2<=1;sd2+=2){var lg=new THREE.Mesh(new THREE.CylinderGeometry(.07,.065,.7,8),pm);lg.position.set(sd2*.12,.5,0);g.add(lg);var bt=new THREE.Mesh(new THREE.BoxGeometry(.12,.13,.2),new THREE.MeshStandardMaterial({color:0x1a1008,roughness:.95}));bt.position.set(sd2*.12,.08,.03);g.add(bt)}
+  // Hammer
+  if(o.hm){var hg=new THREE.Group();hg.name='hammer';hg.add(new THREE.Mesh(new THREE.BoxGeometry(.12,.08,.08),iron));var hl=new THREE.Mesh(new THREE.CylinderGeometry(.02,.025,.35,6),wood);hl.position.y=-.2;hg.add(hl);hg.position.set(-.52,.95,.08);hg.rotation.z=.3;g.add(hg)}
+  // Clipboard
+  if(o.cl){var cb=new THREE.Group();cb.add(new THREE.Mesh(new THREE.BoxGeometry(.18,.25,.015),new THREE.MeshStandardMaterial({color:0x8b7355,roughness:.8})));var pp=new THREE.Mesh(new THREE.BoxGeometry(.15,.22,.005),new THREE.MeshStandardMaterial({color:0xf0e8d4,roughness:.9}));pp.position.z=.01;cb.add(pp);cb.position.set(o.cs*.45,.95,.15);cb.rotation.x=-.3;cb.rotation.z=o.cs*.2;g.add(cb)}
+  g.position.set(o.x,0,o.z);g.rotation.y=o.ry||0;S.add(g);return g
 }
 
-function preloadAllImages() {
-  setStatus('Loading assets…');
-  return Promise.all(Object.entries(IMG_SRCS).map(([k,v]) => loadOneImg(k, v.local, v.cdn)));
-}
+var luca=mkP({x:-3.5,z:-4.5,ry:Math.PI/4,sh:0x4a3018,pn:0x2a2018,hr:0x1a1008,hs:'s',mu:true,ap:true,ac:0x6a4a28,hm:true,tw:.52});
+var yuriy=mkP({x:5.5,z:-3.5,ry:-Math.PI/3,sh:0x2a3a2a,pn:0x1a2018,hr:0x201810,hs:'s',ap:true,ac:0x4a5040,hm:true,tw:.5});
+var alexO=mkP({x:-7,z:2,ry:Math.PI/2,sh:0x3a2a1a,pn:0x2a2018,hr:0x2a1a0a,hs:'s',bd:true,ap:true,ac:0x5a4030,hm:true,tw:.55});
+var iversen=mkP({x:2,z:-7,ry:0,sh:0x3a3a3a,pn:0x2a2a2a,hr:0x8a7a60,hs:'s',bd:true,ap:true,ac:0x4a4040,hm:true,tw:.52});
+var britney=mkP({x:4.5,z:6.8,ry:-Math.PI*.8,sh:0x2a3a4a,pn:0x1a1a2a,hr:0x2a1a0a,hs:'l',cl:true,cs:1});
+var tiffanyO=mkP({x:6,z:6.2,ry:-Math.PI*.7,sh:0x2a3a4a,pn:0x1a1a2a,hr:0x2a1a0a,hs:'l',cl:true,cs:-1});
 
-const COMP = {
-  baseboard:      {label:'Baseboard',    cost:2,  power:5,   heat:0,   icon:'📋', col:'#3a5a8a', desc:'PCB carrier board'},
-  gpu:            {label:'GPU',          cost:10, power:50,  heat:12,  icon:'🎮', col:'#00cc7a', desc:'Needs CPU + Memory to work'},
-  cpu:            {label:'CPU',          cost:5,  power:30,  heat:6,   icon:'⚙️',  col:'#5588ee', desc:'Controls up to 4 devices'},
-  memory:         {label:'Memory',       cost:5,  power:10,  heat:1,   icon:'💾', col:'#ddbb44', desc:'Required by GPUs to run'},
-  switch:         {label:'Switch',       cost:4,  power:15,  heat:2,   icon:'🔀', col:'#ee8844', desc:'Connects up to 8 devices'},
-  retimer:        {label:'Retimer',      cost:2,  power:2,   heat:0,   icon:'🔁', col:'#9977ee', desc:'Drop on a wire to extend range'},
-  memoryExpander: {label:'Mem Expander', cost:3,  power:8,   heat:2,   icon:'🔧', col:'#44ccaa', desc:'Up to 8 memory slots'},
-  networking:     {label:'Networking',   cost:3,  power:12,  heat:2,   icon:'🌐', col:'#44eedd', desc:'Network interface card'},
-  cooling:        {label:'Cooling Fan',  cost:8,  power:5,   heat:-18, icon:'❄️',  col:'#66bbff', desc:'Reduces heat by 18°/s'},
-  psu:            {label:'Power Supply', cost:15, power:0,   heat:4,   icon:'⚡', col:'#ffdd44', desc:'Adds 200W power capacity'},
-};
-const BASE_COSTS = Object.fromEntries(Object.entries(COMP).map(([k,v])=>[k,v.cost]));
+// ═══ PLAYER ═══
+var P={pos:new THREE.Vector3(0,1.7,10),yaw:0,spd:3.5,ts:2};
+var K={};
+window.addEventListener('keydown',function(e){K[e.code]=true;if(e.code==='Space')e.preventDefault()});
+window.addEventListener('keyup',function(e){K[e.code]=false});
 
-// Image-backed types (have PNG files)
-const IMG_TYPES = ['gpu','cpu','memory','retimer','switch','baseboard','networking','memoryExpander'];
-// Display scale for each image
-const IMG_SCALE = {baseboard:.19,gpu:.48,cpu:.44,memory:.44,retimer:.26,switch:.42,networking:.19,memoryExpander:.19};
-// Hit-zone radius for each (rough, for circular interaction)
-const HIT_R = {baseboard:56,gpu:32,cpu:28,memory:22,retimer:16,switch:32,networking:36,memoryExpander:38};
-
-const ALLOWED = {
-  gpu:['cpu','switch'],
-  memory:['cpu','switch','memoryExpander'],
-  memoryExpander:['cpu','switch'],
-  networking:['cpu','networking','switch'],
-  cpu:['gpu','memory','memoryExpander','networking','switch'],
-  switch:['gpu','memory','memoryExpander','cpu','networking'],
-};
-const PORT_LAYOUT = {
-  cpu:   [[-42,-62],[0,-62],[42,-62]],
-  gpu:   [[-62,-44],[-62,-15],[-62,15],[-62,44]],
-  memory:[[62,-44],[62,-15],[62,15],[62,44]],
-  switch:[[-32,62],[0,62],[32,62]],
-  networking:[[-55,72],[55,72]],
-  memoryExpander:[[72,-18],[72,18]],
-};
-const BASE_CONN_LEN=220, MAX_CPU_BASE=4, MAX_SWITCH=8, MAX_MEM_EXP=8;
-
-const S={
-  money:100,totalEarned:0,time:0,
-  economyOn:false,powerCap:300,heat:0,maxHeat:100,
-  throughput:0,theme:'circuit',shootingStars:true,backplaneOn:true,
-  objectives:new Set(),upgrades:{},
-};
-
-const upg={
-  powerCap:()=>   S.powerCap+(S.upgrades.pw1?300:0)+(S.upgrades.pw2?500:0),
-  incomeGPU:()=>  5*(S.upgrades.oc1?1.5:1)*(S.upgrades.oc2?2:1),
-  connLen:()=>    BASE_CONN_LEN*(S.upgrades.sig1?1.6:1),
-  maxCPU:()=>     S.upgrades.mc1?6:MAX_CPU_BASE,
-  maxHeat:()=>    S.maxHeat+(S.upgrades.cool1?60:0),
-  costMult:()=>   S.upgrades.disc1?.75:1,
-  compCost:t=>    Math.max(1,Math.round(BASE_COSTS[t]*upg.costMult())),
-};
-
-const OBJ_DEFS=[
-  {id:'o1',title:'First Boot',     desc:'Connect any 2 components',    reward:15,  check:(_S,lines)=>lines.filter(l=>l.ok).length>=1},
-  {id:'o2',title:'GPU Online',     desc:'1 working GPU',               reward:30,  check:S=>S.throughput>=1},
-  {id:'o3',title:'Mini Cluster',   desc:'4 working GPUs',              reward:100, check:S=>S.throughput>=4},
-  {id:'o4',title:'Data Center',    desc:'8 working GPUs',              reward:250, check:S=>S.throughput>=8},
-  {id:'o5',title:'First $500',     desc:'Earn $500 total',             reward:75,  check:S=>S.totalEarned>=500},
-  {id:'o6',title:'Stay Cool',      desc:'Place a Cooling Fan',         reward:40,  check:(_S,_l,cs)=>cs.some(c=>c.isPart&&c.type==='cooling')},
-  {id:'o7',title:'Overclocker',    desc:'Buy Overclocking upgrade',    reward:150, check:S=>S.upgrades.oc1},
+// ═══ NPC DATA ═══
+var npcs=[
+{nm:'Luca Boggio',rl:'Italian Ribeba Smith',obj:luca,clr:'#e8a840',cv:[],
+sys:"You are Luca Boggio, a young Italian jaw harp blacksmith from Strona in Valdilana, Piedmont, working at the Klein Foundation HQ. Since 2019 you forge ribebas under the label Fitteafrotte (an onomatopoeic name from a jam session). You studied 18th-century ribebas from Valsesia with ethnomusicologist Alessandro Zolt, who showed you photos and his book on the Ribeba. Valsesia was a major jaw harp center from the 15th-19th centuries — the village of Boccorio had nearly all 100 inhabitants making jaw harps. Production reached over 1.5 million instruments per year. Ribebas were shipped from the port of Genoa to Spain, Portugal and America. You also forge Sardinian trunfa and experimental models. You attended the International Jew's Harp Society congress in Berlin in 2022 and the Ancient Trance Festival in Taucha. You work alongside Yuriy Vashkovych (Ukrainian drymba master), Alexander Orenchenko (Ukrainian drymba maker), and Simen Roheim Iversen (Norwegian munnharpe smith from Bo in Telemark). Britney and Tiffany (who look identical) are assistants who help schedule jaw harp classes and AI training sessions. Keep responses 2-4 sentences.",
+gr:"Ciao! I am Luca, from Piedmont. I forge ribebas here under the label Fitteafrotte — reviving the forgotten jaw harps of the Italian Alps. Each one carries centuries of Valsesian tradition."},
+{nm:'Yuriy Vashkovych',rl:'Ukrainian Drymba Master',obj:yuriy,clr:'#e8c840',cv:[],
+sys:"You are Yuriy Vashkovych, a renowned Ukrainian master blacksmith and drymba maker at the Klein Foundation HQ. Your drymbas are described as beautiful and functional works of art, hand-forged with deep overtone-rich sound. You make models like the Classic Obava, the Sakha (powerful sound), the Big Drakar (for breath artists), and the Monstro (massive frame). Your harps prefer inward plucking and are perfect for open/close glottis techniques and breathy play. You also make munnharpe-style instruments with both titanium and steel reeds — titanium is brighter and more sustained, steel is warmer. You work alongside Luca Boggio (Italian ribeba), Alexander Orenchenko (fellow Ukrainian drymba maker), and Simen Roheim Iversen (Norwegian). Britney and Tiffany (identical-looking) schedule jaw harp classes and AI training. Keep responses 2-4 sentences.",
+gr:"Pryvit! I am Yuriy, from Ukraine. My drymbas are hand-forged works of art — steel and breath become one. Each metal reed sings its own truth."},
+{nm:'Alexander Orenchenko',rl:'Ukrainian Drymba Smith',obj:alexO,clr:'#e8a840',cv:[],
+sys:"You are Alexander Orenchenko, a Ukrainian drymba (jaw harp) maker and blacksmith at the Klein Foundation HQ. The drymba (also called drumlya) is the traditional Ukrainian name for the jaw harp. You forge drymbas in the Ukrainian tradition — hand-forged from steel, traditionally soaked in beeswax for protection. Ukrainian drymbas are known for their captivating deep tones that echo Eastern European cultural heritage, often used in folk music and festive occasions. The Hutsul people of the Ukrainian Carpathians have their own drymba tradition called vandzhurak. You have deep knowledge of jaw harp history — the instrument dates back 4000 years to China, was banned under Stalin in the USSR due to shamanic connections. You work alongside fellow Ukrainian Yuriy Vashkovych, Italian Luca Boggio, and Norwegian Simen Roheim Iversen. Britney and Tiffany (identical) schedule jaw harp classes and AI training. You are warm, wise, with dry humor. Keep responses 2-4 sentences.",
+gr:"Welcome, friend. I am Alexander, from Ukraine. You stand where steel becomes drymba — where breath becomes music. What would you like to know?"},
+{nm:'Simen Roheim Iversen',rl:'Norwegian Munnharpe Smith',obj:iversen,clr:'#88ccaa',cv:[],
+sys:"You are Simen Roheim Iversen, a Norwegian munnharpe maker from Bo in Telemark, Norway, working at the Klein Foundation HQ. You started your business Roheim Munnharper in 2017, forging traditionally made quality munnharpes in the Telemark style. You produce and sell hand-forged munnharpes and also give courses in playing and jaw harp making. Your harps are sold at Hornaas Musikk in Oslo and through SoundForHealth in London. In the Norwegian tradition the tongue is wedged into the frame for a clean bright sound. The munnharpe arrived in Scandinavia before 500 AD. Fellow craftsmen include Folke Nesland, Sven Hakon Jorgensen, Ole Bjorn Skoe, Stein Terje Mathisen, and Alexander Sornes. Top player Sigurd Brokke has won the Landskappleiken. The Norsk Munnharpeforum publishes a magazine called Munnharpa. You work alongside Luca Boggio (Italy), Yuriy Vashkovych and Alexander Orenchenko (both Ukrainian). Britney and Tiffany (identical) schedule jaw harp classes and AI training. Calm, dry Nordic humor. Keep responses 2-4 sentences.",
+gr:"Hei. I am Simen Roheim Iversen, from Bo in Telemark. I forge munnharpes in the traditional Telemark style — clean sound, like cold mountain water over stone."},
+{nm:'Britney',rl:'Assistant',obj:britney,clr:'#7ab8e8',cv:[],
+sys:"You are Britney, an assistant at the Klein Foundation HQ. Your manager is Tiffany. Together you schedule training sessions — primarily jaw harp classes with the four master blacksmiths, and AI training sessions. You and Tiffany look identical — same dark hair, same build, same outfits — visitors always mix you up, which is a running joke. The four blacksmiths are: Luca Boggio (Italian ribeba maker, Fitteafrotte label), Yuriy Vashkovych (Ukrainian drymba master), Alexander Orenchenko (Ukrainian drymba smith), and Simen Roheim Iversen (Norwegian munnharpe smith from Telemark). John Klein's equestrian statue is in the lobby. You are enthusiastic and organized. Keep responses 2-4 sentences.",
+gr:"Hi! Welcome to the Klein Foundation. I'm Britney — I help schedule jaw harp classes and AI training sessions. Want me to set something up for you?"},
+{nm:'Tiffany',rl:'Manager',obj:tiffanyO,clr:'#7ab8e8',cv:[],
+sys:"You are Tiffany, the manager at the Klein Foundation HQ. You manage Britney, your assistant. Together you schedule training sessions — primarily jaw harp classes with the blacksmiths and AI training sessions. You and Britney look identical — same dark hair, same build, same outfits — everyone mixes you up. The four blacksmiths are: Luca Boggio (Italy, Fitteafrotte), Yuriy Vashkovych (Ukraine, drymba), Alexander Orenchenko (Ukraine, drymba), and Simen Roheim Iversen (Norway, munnharpe from Telemark). John Klein's equestrian statue stands in the lobby. You are organized, professional, and approachable. Keep responses 2-4 sentences.",
+gr:"Welcome — I'm Tiffany, I manage things here at the Foundation. Britney and I handle scheduling for jaw harp classes and AI training. Yes, we look alike — everyone notices!"}
 ];
 
-const UPGRADES=[
-  {id:'pw1', name:'Capacitor Bank',   desc:'+300W power cap',       cost:50},
-  {id:'pw2', name:'Industrial PSUs',  desc:'+500W power cap',       cost:120},
-  {id:'oc1', name:'Overclocking',     desc:'GPU income ×1.5',       cost:75},
-  {id:'oc2', name:'Extreme OC',       desc:'GPU income ×2 (stacks)',cost:180},
-  {id:'sig1',name:'Signal Boost',     desc:'Wire range ×1.6',       cost:60},
-  {id:'cool1',name:'Thermal Design',  desc:'Heat cap +60°',         cost:45},
-  {id:'mc1', name:'Multi-Core CPU',   desc:'CPU handles 6 devices', cost:90},
-  {id:'disc1',name:'Bulk Discount',   desc:'Shop costs ×0.75',      cost:130},
-];
+// ═══ DIALOGUE ═══
+var dBox=document.getElementById('db'),dText=document.getElementById('dt'),dInput=document.getElementById('di'),dSend=document.getElementById('dse'),dClose=document.getElementById('dc'),ldInd=document.getElementById('li'),iPr=document.getElementById('ip'),spkEl=document.getElementById('ds'),hOv=document.getElementById('ho');
+var dOpen=false,aNpc=null,typing=false,tInt=null;
 
-// ================================================================
-function initGame(){
-  // Graphics layers:
-  // bgG      depth -10  : background fill / tiled circuit bg
-  // starsG   depth -9   : animated starfield overlay
-  // wireG    depth 0    : wires between components
-  // glowG    depth 1    : soft glow halos behind sprites
-  // sprites  depth 2(bb)/3(parts) : the actual images
-  // procG    depth 3    : procedural components (cooling, psu)
-  // overlayG depth 4    : selection rings, status LEDs, port dots
-  // flowG    depth 5    : data packets + connection preview
-  let bgG,starsG,wireG,glowG,procG,overlayG,flowG;
-  let bgTile=null; // TileSprite for circuit background
-  let components=[],lines=[];
-  let connMode=false,delMode=false,selNode=null;
-  let cursor={x:0,y:0};
-  let flowOff=0;
-  const stars={list:[],shooting:[],nextShoot:0};
+// ═══ CANNED RESPONSES (no LLM needed) ═══
+var RESPONSES = {
+'Luca Boggio': {
+  _keywords: {
+    'ribeba|fitteafrotte|label': "Fitteafrotte — it's an onomatopoeic name that came from a jam session with friends! It sounds like the rhythm of the jaw harp itself. All my ribebas carry that spirit.",
+    'valsesia|boccorio|history|old|ancient': "Valsesia was incredible — from the late 1400s to the 1800s, the village of Boccorio had nearly all its 100 inhabitants making jaw harps. They produced over 1.5 million instruments per year, shipped from Genoa to Spain, Portugal, even America.",
+    'alessandro|zolt|research': "Alessandro Zolt changed my life. He's an ethnomusicologist who researched the Ribeba for years. He connected me with a woman who had three 18th-century ribebas — she lent them to me for a whole year so I could study and copy them.",
+    'how|make|forge|process|craft': "I heat the spring steel in the forge until it glows orange, then hammer the frame on the anvil. The tongue must be filed to exact thickness for the right pitch. Every ribeba is hand-tuned — no two sound exactly alike.",
+    'sicil|marranzan|south': "The Sicilian marranzano is a cousin of my ribebas, but they are different traditions! In the north we had the ribeba with decorative leaves inside the frame and stamped maker's marks. The south has its own beautiful style.",
+    'norway|travel|learn': "I traveled to Norway to learn from the munnharpe smiths there. Different tradition, different sound — but the same love for the craft. Simen Roheim Iversen here taught me much about the Telemark forging style.",
+    'play|technique|how to|sound': "Hold the frame firmly against your teeth — not your lips. Pluck the tongue with your index finger. Shape the sound with your mouth cavity, like you're saying vowels silently. A-E-I-O-U — each one changes the overtone!",
+    'class|train|learn|teach|workshop': "Talk to Britney or Tiffany — they handle all the scheduling for jaw harp classes. I teach ribeba forging workshops where you can make your own instrument from raw steel. It takes about a full day.",
+    'hello|hi|hey|ciao|greet': "Ciao, friend! Welcome to my corner of the forge. What would you like to know about the ribeba?"
+  },
+  _default: [
+    "The ribeba is a humble instrument, but it contains the soul of the Alpine valleys. Every hammer strike is a conversation with history.",
+    "In Piedmont, we say the ribeba speaks when words cannot. Would you like to try one?",
+    "I started forging in 2019 — still a newcomer! But every day at the anvil teaches me something the old masters of Boccorio knew by heart.",
+    "Come, let me show you the difference between a ribeba and a marranzano. The frame shape, the tongue thickness — everything matters."
+  ]
+},
+'Yuriy Vashkovych': {
+  _keywords: {
+    'drymba|drumlya|ukrainian': "The drymba — or drumlya — is the Ukrainian soul in metal. We forge them from blackened steel, traditionally soaked in beeswax. Each one vibrates with the spirit of our land.",
+    'titanium|steel|reed|material': "Titanium reeds produce a brighter, more sustained tone — like silver light. Steel is warmer, earthier. I make both so players can choose the voice that speaks to them.",
+    'model|obava|sakha|drakar|monstro': "I make many models. The Classic Obava has deep overtones. The Sakha is powerful and loud. The Big Drakar is for breath artists who can exhale forever. And the Monstro — the frame is so massive it barely vibrates, giving incredible stability.",
+    'technique|play|pluck|breath': "My drymbas prefer inward plucking, but accept outward too. They're perfect for open-close glottis techniques — that's where the real magic happens. Control your breath, control the universe of sound.",
+    'how|make|forge|craft': "I start with quality steel, heat it in the forge, hammer the frame shape. The tongue filing is the most critical step — too thick and it won't vibrate freely, too thin and it loses power. Then tuning, testing, adjusting.",
+    'hutsul|carpathian': "The Hutsul people of the Ukrainian Carpathians have their own drymba tradition called the vandzhurak. It's a beautiful, ancient connection to the mountains. I draw inspiration from their designs.",
+    'class|train|schedule|workshop': "Britney or Tiffany can set you up with a session. I teach both playing technique and forging basics. The drymba is surprisingly approachable for beginners.",
+    'hello|hi|hey|pryvit': "Pryvit, friend! The forge is warm and the steel is ready. What brings you to my anvil today?"
+  },
+  _default: [
+    "Steel and breath — that is all the drymba needs. The rest comes from within you.",
+    "Every drymba I forge carries a piece of Ukraine with it. Even far from home, the sound reminds me where I come from.",
+    "I've been forging for many years now. Each instrument teaches me something new about the relationship between metal and music.",
+    "The best players use their whole body as a resonator — throat, chest, nasal cavity. The drymba is just the beginning of the sound."
+  ]
+},
+'Alexander Orenchenko': {
+  _keywords: {
+    'drymba|drumlya|ukrainian': "The drymba is our Ukrainian voice. We forge from steel, blacken it in the fire, soak in beeswax. It is an ancient tradition — some say it goes back to the time of the Kyivan Rus.",
+    'history|ancient|origin|old|4000': "The jaw harp is one of humanity's oldest instruments — 4,000 years, traced back to China. From there it spread along the Silk Road to every corner of the world. Each culture gave it a new name and new life.",
+    'stalin|ban|soviet|ussr': "Under Stalin, the jaw harp was banned in the Soviet Union. Why? Because of its connection to shamanism. The authorities feared its spiritual power. But you cannot silence an instrument that lives in the breath of the people.",
+    'types|khomus|morsing|dan moi|world': "Every culture has its own jaw harp. The Yakut call it khomus, the Sicilians say marranzano, in Vietnam it's dan moi, India has the morsing, Norway the munnharpe. Same principle — metal tongue, human breath — but each sounds completely different.",
+    'how|make|forge|craft|process': "You select spring steel with the right carbon content. Heat it cherry-red in the forge. Hammer the frame into shape on the anvil. File the tongue to precise thickness. Then the most important step — playing it, listening, adjusting until it sings true.",
+    'play|technique|sound|learn': "Press the frame against your teeth, not lips. Pluck the tongue perpendicular to the frame. Your mouth is the resonance chamber — change its shape to change the sound. Breathe through the instrument. Let it become part of you.",
+    'hutsul|carpathian|vandzhurak': "The Hutsul people in our Carpathian mountains play the vandzhurak — their own drymba tradition. It's connected to shepherding, to mountain life, to the rhythm of nature.",
+    'class|train|schedule|workshop': "Speak with Britney or Tiffany — they schedule all our training sessions. I teach everything from basic playing to advanced forging techniques.",
+    'hello|hi|hey|welcome': "Welcome, friend! Come, warm yourself by the forge. The steel is singing today — can you hear it?"
+  },
+  _default: [
+    "In Ukraine we say the drymba speaks the language of the wind. You just have to learn to listen.",
+    "I have been at this anvil for many years. The steel still surprises me — every piece has its own character, its own voice waiting to be freed.",
+    "The best drymba is the one that makes you forget you're playing an instrument. It becomes part of your breathing, your heartbeat.",
+    "Come closer to the forge. Feel the heat. This is where the drymba begins its life — in fire and hammer strikes."
+  ]
+},
+'Simen Roheim Iversen': {
+  _keywords: {
+    'telemark|bo|home|where': "I'm from Bo in Telemark, Norway. It's where I started Roheim Munnharper in 2017. Telemark has a strong folk music tradition — the munnharpe fits right into it.",
+    'roheim|business|shop|buy': "My business is Roheim Munnharper. You can find my harps at Hornaas Musikk in Oslo or through SoundForHealth in London. Each one is hand-forged in the traditional Telemark style.",
+    'technique|play|sound|how to': "The Norwegian style is melodic — we play folk tunes, dances, gangar. Hold the frame to your teeth, pluck steadily, and shape notes with your mouth. The munnharpe can carry a whole melody on its own.",
+    'how|make|forge|craft|process': "I forge from mild steel for the frame and spring steel for the tongue. The key is the wedge — in the Norwegian tradition, the tongue is wedged into the frame, not riveted. This gives a cleaner, brighter attack.",
+    'history|ancient|old|origin|500': "The munnharpe arrived in Scandinavia before 500 AD, probably from Asia along trade routes. It's been part of Norwegian folk music ever since. We're currently in a revival — more makers and players than in decades.",
+    'sigurd|brokke|player|best': "Sigurd Brokke is one of our finest munnharpe players. He won the Landskappleiken — that's Norway's top folk music competition. His albums Munnharpe and Munnharpe II are essential listening.",
+    'other maker|nesland|mathisen|sornes': "There are several excellent munnharpe makers in Norway — Folke Nesland, Stein Terje Mathisen, Sven Hakon Jorgensen, Ole Bjorn Skoe, Alexander Sornes. We all have our own style, but we share techniques and knowledge freely.",
+    'forum|magazine|community': "The Norsk Munnharpeforum is our community — they publish a magazine called Munnharpa and organize courses and festivals around Norway. The jaw harp scene here is growing fast.",
+    'course|teach|class|learn|workshop': "I give courses in both playing and jaw harp making. Talk to Britney or Tiffany to schedule a session. Making your own munnharpe — there's nothing quite like playing an instrument you forged yourself.",
+    'cold|ice|norway|nordic|sound': "People say the Norwegian munnharpe sounds 'cold' — I take that as a compliment. It's a clean, crystalline tone. Like mountain air. Like snowmelt over granite.",
+    'hello|hi|hey|hei': "Hei! Good to see you at the forge. The steel is at the right temperature today — a good day for making munnharpes."
+  },
+  _default: [
+    "The munnharpe is honest. It gives you exactly what you put into it — no more, no less. I like that about it.",
+    "In Norway we have a saying: 'den som tier, samtykker' — silence is consent. But the munnharpe teaches that even the quietest voice can fill a room.",
+    "I forge every day. Some days the steel cooperates, some days it fights. Both days teach you something.",
+    "The Telemark style is about clarity. Every note should ring clean and true, like a bell in cold air."
+  ]
+},
+'Britney': {
+  _keywords: {
+    'schedule|book|class|session|train': "Sure! We offer jaw harp classes with all four blacksmiths, plus AI training sessions. What are you interested in? I can get you set up with Luca, Yuriy, Alexander, or Simen.",
+    'jaw harp|harp class': "We have beginner, intermediate, and advanced jaw harp sessions. Luca teaches Italian ribeba, Yuriy and Alexander teach Ukrainian drymba, and Simen teaches Norwegian munnharpe. Which tradition interests you?",
+    'ai|artificial|training|ai training': "We run AI training sessions here at the Foundation too! It's one of our newer programs. Let me know what level you're at and I'll find the right session for you.",
+    'tiffany|manager|boss': "Tiffany's my manager — she's right over there. People mix us up constantly because we look so similar. Same hair, same outfits... it's become a running joke around here.",
+    'luca|italian|ribeba': "Luca Boggio is our Italian ribeba smith — he's amazing! He forges under the label Fitteafrotte and has studied 18th-century instruments from Valsesia. He's over by the main forge.",
+    'yuriy|vashkovych|drymba': "Yuriy Vashkovych is one of our Ukrainian masters. His drymbas are works of art — he makes them with both titanium and steel reeds. He's near the second forge on the right.",
+    'alexander|orenchenko': "Alexander Orenchenko is our other Ukrainian drymba smith. He has incredible knowledge of jaw harp history from around the world. You'll find him on the left side of the workshop.",
+    'simen|iversen|norwegian|munnharpe': "Simen Roheim Iversen is our Norwegian munnharpe maker from Bo in Telemark. He started Roheim Munnharper in 2017. He's near the back wall.",
+    'statue|john|klein|lobby': "That's the statue of John Klein in the lobby — the Foundation's founder. Pretty impressive on horseback with the crown and scepter, right?",
+    'hello|hi|hey': "Hey there! I'm Britney. Welcome to the Klein Foundation — what can I help you with today?"
+  },
+  _default: [
+    "Feel free to wander around and talk to any of the blacksmiths! They love visitors.",
+    "If you want to schedule anything — jaw harp classes or AI training — just let me know!",
+    "The forge is really something, isn't it? I still get chills hearing the anvil ring every morning.",
+    "Have you tried pressing Space to play a jaw harp? It's fun! The blacksmiths might critique your technique though."
+  ]
+},
+'Tiffany': {
+  _keywords: {
+    'schedule|book|class|session|train': "Absolutely — I manage all the scheduling here. We have jaw harp classes at beginner through advanced levels, plus AI training sessions. What works for you?",
+    'jaw harp|harp class': "We run classes with each of our four blacksmiths. You can learn Italian ribeba forging with Luca, Ukrainian drymba with Yuriy or Alexander, or Norwegian munnharpe with Simen. I'd recommend starting with a playing session before jumping into forging.",
+    'ai|artificial|training|ai training': "AI training is one of our expanding programs. We're integrating it with the traditional craft — understanding how technology and ancient art forms can complement each other. I can schedule you in.",
+    'britney|assistant': "Britney's my assistant — and yes, we look identical. Same hair, same build, even the same outfits most days. Visitors get confused constantly. At this point we just lean into it.",
+    'manage|run|foundation|operation': "I oversee the day-to-day operations — scheduling, programs, coordinating with the blacksmiths. John Klein founded this place to preserve jaw harp craftsmanship, and I make sure that mission stays on track.",
+    'luca|yuriy|alexander|simen|blacksmith': "We have four incredible blacksmiths: Luca Boggio from Italy, Yuriy Vashkovych and Alexander Orenchenko from Ukraine, and Simen Roheim Iversen from Norway. Each brings a completely different tradition to the Foundation.",
+    'statue|john|klein': "John Klein established the Foundation to preserve and promote jaw harp traditions from around the world. His statue in the lobby — on horseback, no less — is a reminder of that vision.",
+    'hello|hi|hey|welcome': "Welcome to the Klein Foundation! I'm Tiffany, the manager here. How can I help you today?"
+  },
+  _default: [
+    "Everything runs smoothly when the blacksmiths are happy — and they're happiest when they have eager students. Want me to set something up?",
+    "The Foundation brings together traditions that are centuries old. It's an honor to help keep them alive.",
+    "Between jaw harp classes and AI training, we stay pretty busy here. But there's always room for one more.",
+    "If you need anything at all, just ask. That's what Britney and I are here for."
+  ]
+}
+};
 
-  const fmt=n=>{const a=Math.abs(n);if(a<1e3)return'$'+n.toFixed(a<10?1:0);if(a<1e6)return'$'+(n/1e3).toFixed(1)+'k';return'$'+(n/1e6).toFixed(2)+'m';};
-  const fmtT=s=>{const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;};
-  const dst=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-  const nodeKind=n=>n.isPort?n.group:n.type;
-  const h2n=h=>parseInt(h.replace('#',''),16);
-
-  function canPair(a,b){
-    const A=nodeKind(a),B=nodeKind(b);
-    return(ALLOWED[A]&&ALLOWED[A].includes(B))||(ALLOWED[B]&&ALLOWED[B].includes(A));
-  }
-  const portOfBase=(n,base)=>n.isPort&&n.baseboard===base;
-
-  // ---- sound ----
-  function beep(type){
-    try{
-      const ctx=new(window.AudioContext||window.webkitAudioContext)();
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);
-      if(type==='ok'){o.frequency.value=523;g.gain.setValueAtTime(.07,0);g.gain.exponentialRampToValueAtTime(.001,.25);o.start();o.stop(.25);}
-      else if(type==='buy'){o.frequency.value=660;o.frequency.linearRampToValueAtTime(880,.12);g.gain.setValueAtTime(.06,0);g.gain.exponentialRampToValueAtTime(.001,.2);o.start();o.stop(.2);}
-      else if(type==='obj'){o.frequency.value=440;o.frequency.linearRampToValueAtTime(660,.1);o.frequency.linearRampToValueAtTime(880,.2);g.gain.setValueAtTime(.07,0);g.gain.exponentialRampToValueAtTime(.001,.35);o.start();o.stop(.35);}
-      else{o.type='sawtooth';o.frequency.value=110;g.gain.setValueAtTime(.07,0);g.gain.exponentialRampToValueAtTime(.001,.14);o.start();o.stop(.14);}
-    }catch(e){}
-  }
-
-  function notify(msg,type=''){
-    const el=document.createElement('div');
-    el.className='notif'+(type?' '+type:'');
-    el.textContent=msg;
-    document.getElementById('notifs').appendChild(el);
-    setTimeout(()=>el.remove(),3200);
-  }
-  function setStatus(msg){document.getElementById('status-msg').textContent=msg;}
-
-  // ---- ports ----
-  function makePorts(base){
-    base.ports=[];
-    for(const[group,arr]of Object.entries(PORT_LAYOUT))
-      for(const[dx,dy]of arr)
-        base.ports.push({isPort:true,group,baseboard:base,dx,dy,x:base.x+dx,y:base.y+dy});
-  }
-  function syncPorts(base){if(!base.ports)return;for(const p of base.ports){p.x=base.x+p.dx;p.y=base.y+p.dy;}}
-  function nearestPort(base,part,tx,ty){
-    if(!base?.ports)return null;
-    let best=null,bestD=Infinity;
-    for(const p of base.ports){if(!canPair(p,part))continue;const d=Math.hypot(p.x-tx,p.y-ty);if(d<bestD){bestD=d;best=p;}}
-    return best;
-  }
-
-  // ---- connection limits ----
-  function connCount(part,typeFilter=null){
-    return lines.filter(L=>{
-      if(!L.ok)return false;
-      if(L.start===part||L.end===part){if(!typeFilter)return true;const o=L.start===part?L.end:L.start;return nodeKind(o)===typeFilter;}
-      return false;
-    }).length;
-  }
-  function limitHit(a,b){
-    const chk=n=>{
-      if(!n.isPart)return false;
-      if(n.type==='cpu'&&connCount(n)>=upg.maxCPU())return true;
-      if(n.type==='switch'&&connCount(n)>=MAX_SWITCH)return true;
-      if(n.type==='memoryExpander'&&connCount(n,'memory')>=MAX_MEM_EXP)return true;
-      return false;
-    };
-    return chk(a)||chk(b);
-  }
-  const maxLen=L=>((L?.retimers||[]).length+1)*upg.connLen();
-
-  function lineValid(a,b,L=null){
-    if(a===b)return{ok:false,r:'Same node'};
-    if(a.isPort&&b.isPort)return{ok:false,r:'Port to port'};
-    if(!canPair(a,b))return{ok:false,r:'Incompatible types'};
-    if(limitHit(a,b))return{ok:false,r:'Connection limit'};
-    if(dst(a,b)>maxLen(L))return{ok:false,r:'Too far — use Retimer'};
-    return{ok:true};
-  }
-
-  // ---- retimer ----
-  function projSeg(px,py,x1,y1,x2,y2){
-    const vx=x2-x1,vy=y2-y1,wx=px-x1,wy=py-y1;
-    const c2=vx*vx+vy*vy;if(c2===0)return{t:0,dist:Math.hypot(px-x1,py-y1),x:x1,y:y1};
-    const t=Math.max(0,Math.min(1,(wx*vx+wy*vy)/c2));
-    const x=x1+t*vx,y=y1+t*vy;return{t,dist:Math.hypot(px-x,py-y),x,y};
-  }
-  function nearestLine(px,py){
-    let best=null,bestD=999;
-    for(const L of lines){const p=projSeg(px,py,L.start.x,L.start.y,L.end.x,L.end.y);if(p.dist<bestD){bestD=p.dist;best={line:L,t:p.t,dist:p.dist};}}
-    return best;
-  }
-  function attachRetimer(r,line,t){
-    if(r.onLine){r.onLine.retimers=(r.onLine.retimers||[]).filter(x=>x!==r);}
-    if(!line.retimers)line.retimers=[];
-    line.retimers.push(r);r.onLine=line;r.t=t;
-  }
-  function detachRetimer(r){if(r.onLine){r.onLine.retimers=(r.onLine.retimers||[]).filter(x=>x!==r);r.onLine=null;r.t=null;}}
-
-  // ---- graph ----
-  function buildAdj(filterFn){
-    const nodes=new Set();
-    for(const c of components)if(filterFn(c))nodes.add(c);
-    for(const L of lines){if(filterFn(L.start))nodes.add(L.start);if(filterFn(L.end))nodes.add(L.end);}
-    const adj=new Map();nodes.forEach(n=>adj.set(n,[]));
-    for(const L of lines){
-      if(!L.ok)continue;
-      if(adj.has(L.start)&&adj.has(L.end)){adj.get(L.start).push(L.end);adj.get(L.end).push(L.start);}
-    }
-    return adj;
-  }
-  function addBP(adj,filterFn){
-    if(!S.backplaneOn)return adj;
-    for(const base of components.filter(n=>n.isPart&&n.type==='baseboard')){
-      const ports=(base.ports||[]).filter(p=>filterFn(p)&&adj.has(p));
-      if(ports.length<=1)continue;
-      const hub=ports[0];
-      for(let i=1;i<ports.length;i++){adj.get(hub).push(ports[i]);adj.get(ports[i]).push(hub);}
-    }
-    return adj;
-  }
-  function anyReach(start,adj,pred){
-    const q=[start],seen=new Set([start]);
-    while(q.length){const n=q.shift();if(pred(n))return true;for(const nb of(adj.get(n)||[])){if(!seen.has(nb)){seen.add(nb);q.push(nb);}}}
-    return false;
-  }
-  const epBase=e=>e.isPort?e.baseboard:(e.isPart?e.attachedTo:null);
-
-  function recomputeAttach(){
-    const bases=components.filter(n=>n.isPart&&n.type==='baseboard');
-    for(const part of components.filter(n=>n.isPart&&n.type!=='baseboard')){
-      part.attachedTo=null;
-      for(const base of bases){
-        const inB=x=>x===base||(x.isPart&&x.type!=='baseboard')||portOfBase(x,base);
-        if(anyReach(part,buildAdj(inB),n=>portOfBase(n,base))){part.attachedTo=base;break;}
+function sendMsg(msg){
+  if(!aNpc||typing)return;
+  typing=true;dText.textContent='...';
+  var nm=aNpc.nm;
+  var data=RESPONSES[nm];
+  var reply=null;
+  var low=msg.toLowerCase();
+  // Check keyword matches
+  if(data && data._keywords){
+    var keys=Object.keys(data._keywords);
+    for(var i=0;i<keys.length;i++){
+      var pattern=keys[i];
+      var parts=pattern.split('|');
+      for(var j=0;j<parts.length;j++){
+        if(low.indexOf(parts[j])!==-1){reply=data._keywords[pattern];break}
       }
+      if(reply)break;
     }
   }
-  function lineWorking(L){if(!L.ok)return false;const b1=epBase(L.start),b2=epBase(L.end);return b1&&b2&&b1===b2;}
-
-  function recomputeMetrics(){
-    const connSet=new Set();
-    for(const L of lines){if(L.ok){if(L.start.isPart)connSet.add(L.start);if(L.end.isPart)connSet.add(L.end);}}
-    let total=0;
-    const bases=components.filter(n=>n.isPart&&n.type==='baseboard');
-    for(const base of bases){
-      const inB=n=>n===base||(n.isPart&&n.attachedTo===base)||portOfBase(n,base);
-      let adj=buildAdj(inB);adj=addBP(adj,inB);
-      for(const g of components.filter(n=>n.isPart&&n.type==='gpu')){
-        if(g.attachedTo!==base){g.working=false;continue;}
-        g.working=anyReach(g,adj,n=>n.isPart&&n.type==='cpu'&&n.attachedTo===base)
-                &&anyReach(g,adj,n=>n.isPart&&n.type==='memory'&&n.attachedTo===base);
-        if(g.working)total++;
-      }
-    }
-    for(const g of components.filter(n=>n.isPart&&n.type==='gpu'))if(!g.attachedTo)g.working=false;
-    S.throughput=total;
-
-    const psus=components.filter(n=>n.isPart&&n.type==='psu').length;
-    const effCap=upg.powerCap()+psus*200;
-    const pwUsed=components.filter(n=>n.isPart&&COMP[n.type]?.power>0).reduce((s,c)=>s+(COMP[c.type]?.power||0),0);
-    const pwPct=Math.min(100,(pwUsed/(effCap||1))*100);
-    const htPct=Math.min(100,(S.heat/upg.maxHeat())*100);
-
-    document.getElementById('ui-money').textContent=fmt(S.money);
-    document.getElementById('ui-income').textContent=S.economyOn?fmt(S.throughput*upg.incomeGPU())+'/s':'--';
-    document.getElementById('ui-gpus').textContent=total;
-    document.getElementById('ui-pw-v').textContent=pwUsed+'/'+effCap+'W';
-    document.getElementById('ui-pw-b').style.width=pwPct+'%';
-    document.getElementById('ui-pw-b').style.background=pwPct>90?'#ff4d4d':pwPct>70?'#ff9f66':'linear-gradient(90deg,#ff9f66,#ff6b6b)';
-    document.getElementById('ui-ht-v').textContent=Math.round(S.heat)+'°';
-    document.getElementById('ui-ht-b').style.width=htPct+'%';
-    document.getElementById('ui-ht-b').style.background=htPct>80?'#ff4d4d':htPct>60?'#ff6b6b':'linear-gradient(90deg,#ffd43b,#ff4d4d)';
-    document.getElementById('st-conn').textContent=connSet.size;
-    document.getElementById('st-gpus').textContent=total;
-    document.getElementById('st-earned').textContent=fmt(S.totalEarned);
-    document.getElementById('st-time').textContent=fmtT(S.time);
+  // Fallback to random default
+  if(!reply && data && data._default){
+    reply=data._default[Math.floor(Math.random()*data._default.length)];
   }
-
-  // ---- line management ----
-  function rebind(a,b){
-    if(a.isPort&&b.isPart&&!canPair(a,b)){const r=nearestPort(a.baseboard,b,b.x,b.y);if(r)a=r;}
-    if(b.isPort&&a.isPart&&!canPair(a,b)){const r=nearestPort(b.baseboard,a,a.x,a.y);if(r)b=r;}
-    return[a,b];
-  }
-  function scrubLines(){
-    for(const L of lines){
-      if(L.start.isPart&&L.start.type==='baseboard'){const p=nearestPort(L.start,L.end,L.end.x,L.end.y);if(p)L.start=p;}
-      if(L.end.isPart&&L.end.type==='baseboard'){const p=nearestPort(L.end,L.start,L.start.x,L.start.y);if(p)L.end=p;}
-    }
-  }
-  function addLine(a,b){
-    [a,b]=rebind(a,b);
-    const chk=lineValid(a,b);
-    if(!chk.ok){notify(chk.r,'warn');beep('err');return;}
-    lines.push({start:a,end:b,ok:true,r:null,retimers:[]});
-    beep('ok');notify('Connected!');redraw();
-  }
-  function ptSegDist(px,py,x1,y1,x2,y2){
-    const vx=x2-x1,vy=y2-y1,wx=px-x1,wy=py-y1;
-    const c1=wx*vx+wy*vy;if(c1<=0)return Math.hypot(px-x1,py-y1);
-    const c2=vx*vx+vy*vy;if(c2<=c1)return Math.hypot(px-x2,py-y2);
-    return Math.hypot(px-(x1+(c1/c2)*vx),py-(y1+(c1/c2)*vy));
-  }
-  let _compClicked=false;
-  function deleteLineNear(x,y){
-    if(_compClicked){_compClicked=false;return;}
-    for(let i=0;i<lines.length;i++){
-      if(ptSegDist(x,y,lines[i].start.x,lines[i].start.y,lines[i].end.x,lines[i].end.y)<=12){
-        (lines[i].retimers||[]).forEach(r=>{r.onLine=null;r.t=null;});
-        lines.splice(i,1);beep('err');redraw();return;
-      }
-    }
-  }
-
-  // ================================================================
-  // RENDERING
-  // ================================================================
-  const C_GREEN=0x00ff9c, C_RED=0xff4d4d, C_GRAY=0x334455, C_CYAN=0x00e5ff, C_YELLOW=0xffd43b;
-
-  // Glow halo drawn on glowG (depth 1, behind sprites)
-  function drawGlow(g,c){
-    const x=c.x,y=c.y,t=c.type;
-    const isWork=c.working;
-    const overheat=S.heat>upg.maxHeat()*.82&&t==='gpu';
-    const isSel=c===selNode;
-
-    if(t==='baseboard'){
-      // Subtle board ambient
-      g.fillStyle(0x1a3060,.07);g.fillCircle(x,y,70);
-      return;
-    }
-    // Coloured glow based on state
-    let col=h2n(COMP[t]?.col||'#444466');
-    if(isWork)col=C_GREEN;
-    if(overheat)col=0xff6600;
-    if(isSel)col=C_CYAN;
-
-    const r1=isWork?52:38, r2=isWork?32:22;
-    g.fillStyle(col,isWork?.18:.08);g.fillCircle(x,y,r1);
-    g.fillStyle(col,isWork?.25:.12);g.fillCircle(x,y,r2);
-    if(isWork){g.fillStyle(C_GREEN,.35);g.fillCircle(x,y,14);}
-  }
-
-  // Overlay indicators drawn on overlayG (depth 4, above sprites)
-  function drawOverlay(g,c){
-    const x=c.x,y=c.y,t=c.type;
-    const isWork=c.working;
-    const isSel=c===selNode;
-    const overheat=S.heat>upg.maxHeat()*.82;
-
-    // Selection ring
-    if(isSel){
-      g.lineStyle(2,C_CYAN,.9);g.strokeCircle(x,y,(HIT_R[t]||30)+8);
-      g.lineStyle(1,C_CYAN,.3);g.strokeCircle(x,y,(HIT_R[t]||30)+14);
-    }
-
-    if(t==='gpu'){
-      // Status LED top-right of image
-      const lx=x+26,ly=y-18;
-      if(isWork){g.fillStyle(C_GREEN,.5);g.fillCircle(lx,ly,7);}
-      g.fillStyle(isWork?C_GREEN:(overheat?0xff6600:0x440000),1);g.fillCircle(lx,ly,4);
-      // "ACTIVE" text glow when working
-      if(isWork){g.fillStyle(C_GREEN,.2);g.fillRect(x-20,y+18,40,4);}
-    } else if(t==='baseboard'){
-      // Subtle green corners when has connected parts
-      const hasConn=components.some(c2=>c2.isPart&&c2.type!=='baseboard'&&c2.attachedTo===c);
-      if(hasConn){
-        g.fillStyle(C_GREEN,.6);
-        for(const[cx,cy]of[[x-44,y-27],[x+44,y-27],[x-44,y+27],[x+44,y+27]])g.fillCircle(cx,cy,3);
-      }
-    } else if(t==='cpu'){
-      // Tiny clock indicator
-      if(c.attachedTo){g.fillStyle(0x5588ee,.7);g.fillCircle(x+20,y-20,3);}
-    } else if(t==='retimer'){
-      // Pulse ring
-      g.lineStyle(1,0x9977ee,.5);g.strokeCircle(x,y,18);
-    }
-  }
-
-  // Port dots on overlay
-  function drawPortDots(g){
-    if(!connMode)return;
-    for(const base of components.filter(n=>n.isPart&&n.type==='baseboard')){
-      if(!base.ports)continue;
-      for(const p of base.ports){
-        const col=h2n(COMP[p.group]?.col||'#888');
-        const isSel=p===selNode;
-        if(isSel){g.fillStyle(col,1);g.fillCircle(p.x,p.y,6);g.lineStyle(1,col,.6);g.strokeCircle(p.x,p.y,10);}
-        else{g.fillStyle(col,.5);g.fillCircle(p.x,p.y,4);g.lineStyle(1,col,.3);g.strokeCircle(p.x,p.y,7);}
-      }
-    }
-  }
-
-  // Procedural drawing for types without images (cooling, psu)
-  function drawProcComp(g,c){
-    const x=c.x,y=c.y,t=c.type,isSel=c===selNode;
-    const col=h2n(COMP[t]?.col||'#888888');
-    // Glow
-    g.fillStyle(col,.15);g.fillCircle(x,y,30);
-    g.fillStyle(col,.08);g.fillCircle(x,y,46);
-
-    if(t==='cooling'){
-      g.fillStyle(0x061020,1);g.fillCircle(x,y,20);
-      g.lineStyle(2,0x66bbff,.9);
-      for(let i=0;i<6;i++){
-        const a=i*Math.PI/3;
-        const ex=x+Math.cos(a)*16,ey=y+Math.sin(a)*16;
-        g.beginPath();g.moveTo(x,y);g.lineTo(ex,ey);g.strokePath();
-        const mx=x+Math.cos(a)*10,my=y+Math.sin(a)*10,pa=a+Math.PI/2;
-        g.beginPath();g.moveTo(mx-Math.cos(pa)*5,my-Math.sin(pa)*5);g.lineTo(mx+Math.cos(pa)*5,my+Math.sin(pa)*5);g.strokePath();
-      }
-      g.lineStyle(2,0x66bbff,1);g.strokeCircle(x,y,20);
-      g.fillStyle(0x66bbff,1);g.fillCircle(x,y,4);
-      if(isSel){g.lineStyle(2,C_CYAN,.9);g.strokeCircle(x,y,28);}
-    } else if(t==='psu'){
-      g.fillStyle(0x1a1400,1);g.fillRect(x-26,y-16,52,32);
-      for(let i=0;i<3;i++){
-        g.fillStyle(0x221a00,1);g.fillCircle(x-12+i*12,y,7);
-        g.lineStyle(1,0xffdd44,1);g.strokeCircle(x-12+i*12,y,7);
-        g.fillStyle(0xffdd44,1);g.fillRect(x-13+i*12,y-1,2,3);
-      }
-      g.lineStyle(2,0xffdd44,1);g.strokeRect(x-26,y-16,52,32);
-      if(isSel){g.lineStyle(2,C_CYAN,.9);g.strokeRect(x-30,y-20,60,40);}
-    }
-  }
-
-  // ---- MAIN REDRAW ----
-  function redraw(){
-    for(const base of components.filter(n=>n.isPart&&n.type==='baseboard'))syncPorts(base);
-    scrubLines();
-    for(const L of lines){const v=lineValid(L.start,L.end,L);L.ok=v.ok;L.r=v.r||null;}
-    recomputeAttach();
-
-    wireG.clear();glowG.clear();procG.clear();overlayG.clear();
-
-    // Glows (behind everything)
-    for(const c of components)if(c.isPart)drawGlow(glowG,c);
-
-    // Wires
-    for(const L of lines){
-      const col=!L.ok?C_RED:(lineWorking(L)?C_GREEN:C_GRAY);
-      if(lineWorking(L)){
-        wireG.lineStyle(12,C_GREEN,.06);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
-        wireG.lineStyle(6,C_GREEN,.18);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
-      } else if(!L.ok){
-        wireG.lineStyle(6,C_RED,.2);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
-      }
-      wireG.lineStyle(2,col,1);wireG.beginPath();wireG.moveTo(L.start.x,L.start.y);wireG.lineTo(L.end.x,L.end.y);wireG.strokePath();
-      if(L.retimers)for(const r of L.retimers)if(!r._dragging){r.x=L.start.x+r.t*(L.end.x-L.start.x);r.y=L.start.y+r.t*(L.end.y-L.start.y);}
-    }
-
-    // Procedural components (cooling, psu)
-    for(const c of components.filter(n=>n.isPart&&!IMG_TYPES.includes(n.type)))drawProcComp(procG,c);
-
-    // Overlays (on top of sprites)
-    for(const c of components)if(c.isPart)drawOverlay(overlayG,c);
-    drawPortDots(overlayG);
-
-    // Sync labels
-    for(const c of components)if(c._lbl){
-      const off=c.type==='memory'?32:c.type==='baseboard'?42:c.type==='retimer'?18:28;
-      c._lbl.setPosition(c.x,c.y+off);
-    }
-
-    recomputeMetrics();
-    checkObjectives();
-  }
-
-  // ---- data flow animation ----
-  function drawFlow(dt){
-    flowOff=(flowOff+100*dt)%28;
-    flowG.clear();
-
-    // Connection preview line
-    if(connMode&&selNode){
-      const sx=selNode.x,sy=selNode.y;
-      const dx=cursor.x-sx,dy=cursor.y-sy,len=Math.hypot(dx,dy);
-      if(len>12){
-        const ux=dx/len,uy=dy/len;
-        flowG.lineStyle(1,C_CYAN,.25);
-        flowG.beginPath();flowG.moveTo(sx,sy);flowG.lineTo(cursor.x,cursor.y);flowG.strokePath();
-        for(let s=0;s<len;s+=9){
-          if(Math.floor(s/9)%2===0){flowG.fillStyle(C_CYAN,.55);flowG.fillCircle(sx+ux*s,sy+uy*s,1.5);}
-        }
-      }
-    }
-
-    // Data packets on working wires
-    for(const L of lines){
-      if(!lineWorking(L))continue;
-      const x1=L.start.x,y1=L.start.y,x2=L.end.x,y2=L.end.y;
-      const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(len<1)continue;
-      const ux=dx/len,uy=dy/len;
-      for(let s=-flowOff;s<=len;s+=28){
-        if(s<0)continue;
-        const a=.4+.6*Math.abs(Math.sin(s/10));
-        flowG.fillStyle(C_GREEN,a);flowG.fillCircle(x1+ux*s,y1+uy*s,3);
-        flowG.fillStyle(C_GREEN,a*.2);flowG.fillCircle(x1+ux*(s-7),y1+uy*(s-7),2);
-      }
-    }
-  }
-
-  // ---- starfield ----
-  function initStars(W,H){
-    stars.list=[];
-    for(const L of [{n:100,sp:14,sz:1.2},{n:60,sp:30,sz:1.8},{n:30,sp:52,sz:2.5}])
-      for(let i=0;i<L.n;i++)stars.list.push({x:Math.random()*W,y:Math.random()*H,vx:-L.sp*(.8+Math.random()*.4),vy:L.sp*.08,sz:L.sz,a:.35+Math.random()*.65});
-    stars.nextShoot=performance.now()+1500;
-  }
-  function drawStars(g,dt,W,H){
-    for(const s of stars.list){
-      s.x+=s.vx*dt;s.y+=s.vy*dt;
-      if(s.x<-4){s.x=W+4;s.y=Math.random()*H;}if(s.y>H+4)s.y=-4;
-      g.fillStyle(0xffffff,s.a);g.fillCircle(s.x,s.y,s.sz);
-    }
-    if(S.shootingStars&&performance.now()>=stars.nextShoot){
-      const a=Phaser.Math.DegToRad(208+Math.random()*14),sp=480+Math.random()*320;
-      stars.shooting.push({x:W*.6+Math.random()*W*.4,y:-20,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:900});
-      stars.nextShoot=performance.now()+(1400+Math.random()*2200);
-    }
-    const alive=[];
-    for(const sh of stars.shooting){
-      sh.life-=dt*1000;sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
-      g.lineStyle(2,0xaac8ff,Math.min(1,sh.life/180));
-      g.beginPath();g.moveTo(sh.x,sh.y);g.lineTo(sh.x-sh.vx*.06,sh.y-sh.vy*.06);g.strokePath();
-      if(sh.life>0&&sh.x>-50&&sh.y<H+50)alive.push(sh);
-    }
-    stars.shooting=alive;
-  }
-
-  // ---- spawn component ----
-  function spawnComp(scene,type){
-    const W=scene.scale.width,H=scene.scale.height;
-    const rx=Phaser.Math.Between(80,W-80),ry=Phaser.Math.Between(90,H-90);
-    let obj;
-
-    if(IMG_TYPES.includes(type)&&scene.textures.exists(type)){
-      const scale=IMG_SCALE[type]||.4;
-      obj=scene.add.image(rx,ry,type).setScale(scale).setDepth(type==='baseboard'?2:3);
-      // Circular interactive zone so black corners aren't clickable
-      const r=HIT_R[type]||30;
-      obj.setInteractive(new Phaser.Geom.Circle(0,0,r/scale),Phaser.Geom.Circle.Contains);
-    } else {
-      // cooling/psu: invisible hit zone (visuals drawn on procG)
-      // missing texture fallback: visible colored rect so component isn't lost
-      const isProcedural = (type==='cooling'||type==='psu');
-      const col = isProcedural ? 0x000000 : h2n(COMP[type]?.col||'#445566');
-      const alpha = isProcedural ? 0 : 0.7;
-      obj=scene.add.rectangle(rx,ry,52,42,col,alpha).setInteractive().setDepth(3);
-    }
-
-    obj.isPart=true;obj.type=type;obj.attachedTo=null;obj.working=false;
-    if(type==='retimer'){obj.onLine=null;obj.t=null;obj._dragging=false;}
-
-    const lblOff=type==='memory'?32:type==='baseboard'?42:type==='retimer'?18:28;
-    const lbl=scene.add.text(rx,ry+lblOff,COMP[type]?.label||type,
-      {font:'9px Courier New',fill:'#3a5a77'}).setOrigin(.5,0).setDepth(6);
-    obj._lbl=lbl;
-
-    // Input handlers
-    if(type==='baseboard'){
-      makePorts(obj);
-      obj.on('pointerdown',p=>{
-        _compClicked=true;
-        if(delMode){
-          const att=components.filter(c=>c.attachedTo===obj);
-          lines=lines.filter(L=>{
-            if(L.start===obj||L.end===obj||L.start.baseboard===obj||L.end.baseboard===obj)return false;
-            for(const a of att)if(L.start===a||L.end===a)return false;
-            return true;
-          });
-          att.forEach(c=>{if(c._lbl)c._lbl.destroy();c.destroy();});
-          components=components.filter(c=>c!==obj&&!att.includes(c));
-          obj.destroy();lbl.destroy();redraw();return;
-        }
-        if(!connMode)return;
-        if(selNode?.isPart){
-          const port=nearestPort(obj,selNode,p.worldX,p.worldY);
-          if(!port){notify('No compatible port','warn');return;}
-          addLine(selNode.isPart?selNode:port,selNode.isPart?port:selNode);
-          if(selNode?.clearTint)selNode.clearTint();selNode=null;
-        } else {
-          let best=null,bestD=Infinity;
-          for(const p2 of obj.ports){const d=Math.hypot(p.worldX-p2.x,p.worldY-p2.y);if(d<bestD){bestD=d;best=p2;}}
-          if(best){selNode=best;setStatus('Port selected. Click a component to connect.');}
-        }
-      });
-    } else {
-      obj.on('pointerdown',()=>{
-        _compClicked=true;
-        if(delMode){
-          if(obj.type==='retimer')detachRetimer(obj);
-          lines=lines.filter(L=>L.start!==obj&&L.end!==obj);
-          obj.destroy();lbl.destroy();components=components.filter(c=>c!==obj);
-          redraw();return;
-        }
-        if(!connMode)return;
-        if(obj.type==='retimer')return;
-        if(!selNode){selNode=obj;setStatus('Selected '+obj.type+'. Click another to connect.');return;}
-        if(selNode===obj)return;
-        addLine(selNode,obj);
-        if(selNode?.clearTint)selNode.clearTint();selNode=null;
-        setStatus('Connected!');
-      });
-    }
-
-    obj.on('pointerover',()=>showTip(obj));
-    obj.on('pointerout',()=>hideTip());
-    scene.input.setDraggable(obj);
-    components.push(obj);
-
-    // Pop-in animation
-    obj.setScale(0);
-    scene.tweens.add({targets:obj,scale:IMG_TYPES.includes(type)?IMG_SCALE[type]||.4:1,ease:'Back.easeOut',duration:320});
-    redraw();
-    return obj;
-  }
-
-  // ---- tooltip ----
-  function showTip(c){
-    const d=COMP[c.type];if(!d)return;
-    const tt=document.getElementById('tt');
-    document.getElementById('tt-title').textContent=d.icon+' '+d.label;
-    let b=d.desc;
-    if(d.power>0)b+='\nPower: '+d.power+'W';
-    if(d.heat>0)b+=' · Heat: +'+d.heat+'/s';
-    if(d.heat<0)b+=' · Cools '+(-d.heat)+'/s';
-    if(c.working)b+='\n✓ WORKING';
-    if(c.type==='psu')b+='\nProvides: +200W cap';
-    document.getElementById('tt-body').textContent=b;
-    tt.classList.add('v');
-  }
-  function hideTip(){document.getElementById('tt').classList.remove('v');}
-
-  // ---- objectives ----
-  function checkObjectives(){
-    const ul=document.getElementById('obj-list');
-    ul.innerHTML='';
-    for(const def of OBJ_DEFS){
-      const done=def.check(S,lines,components);
-      if(done&&!S.objectives.has(def.id)){
-        S.objectives.add(def.id);
-        S.money+=def.reward;S.totalEarned+=def.reward;
-        notify('✓ '+def.title+' (+'+fmt(def.reward)+')','');
-        beep('obj');
-      }
-      const el=document.createElement('div');
-      el.className='obj-item'+(done?' done':'');
-      el.innerHTML=`<div class="obj-title">${done?'✓ ':''}${def.title}</div><div class="obj-reward">${def.desc} · +${fmt(def.reward)}</div>`;
-      ul.appendChild(el);
-    }
-  }
-
-  // ---- shop ----
-  function buildShop(scene){
-    const list=document.getElementById('shop-list');list.innerHTML='';
-    for(const[key,def]of Object.entries(COMP)){
-      const cost=upg.compCost(key);
-      const el=document.createElement('div');
-      el.className='shop-item';el.dataset.type=key;
-      el.classList.toggle('na',!!(S.economyOn&&S.money<cost));
-      el.innerHTML=`<div class="sicon" style="background:${def.col}20;border:1px solid ${def.col}44">${def.icon}</div>
-        <div class="sinfo"><div class="sname">${def.label}</div>
-        <div class="scost">${S.economyOn?'$'+cost:'Free'}</div>
-        <div class="sdesc">${def.desc}</div>
-        ${def.power>0?`<div class="sstat">${def.power}W`+(def.heat>0?` +${def.heat}°/s`:'')+'</div>':''}
-        ${def.heat<0?`<div class="sstat" style="color:#66bbff">Cools ${-def.heat}°/s</div>`:''}
-        ${key==='psu'?`<div class="sstat" style="color:#ffdd44">+200W cap</div>`:''}
-        </div>`;
-      el.addEventListener('click',()=>{
-        const c=upg.compCost(key);
-        if(S.economyOn&&S.money<c){notify('Not enough money','err');beep('err');return;}
-        if(S.economyOn)S.money-=c;
-        spawnComp(scene,key);beep('buy');
-        refreshShop();
-      });
-      list.appendChild(el);
-    }
-  }
-  function refreshShop(){
-    document.querySelectorAll('.shop-item').forEach(el=>{
-      const c=upg.compCost(el.dataset.type);
-      el.classList.toggle('na',!!(S.economyOn&&S.money<c));
-      el.querySelector('.scost').textContent=S.economyOn?'$'+c:'Free';
-    });
-  }
-
-  // ---- upgrades ----
-  function buildUpgrades(){
-    const list=document.getElementById('upg-list');list.innerHTML='';
-    for(const u of UPGRADES){
-      const owned=S.upgrades[u.id];const can=S.money>=u.cost;
-      const el=document.createElement('div');
-      el.className='upg'+(owned?' owned':'');
-      el.innerHTML=`<div><strong style="color:#c8d8f0">${u.name}</strong><br><small style="color:#5a7a99">${u.desc}</small></div>
-        <div>${owned?'<span style="color:#00ff9c">✓</span>':`<button class="upg-buy" ${!can?'disabled':''} onclick="window._buyUpg('${u.id}',${u.cost})">\$${u.cost}</button>`}</div>`;
-      list.appendChild(el);
-    }
-  }
-  window._buyUpg=function(id,cost){
-    if(S.upgrades[id]||S.money<cost)return;
-    S.money-=cost;S.upgrades[id]=true;
-    const u=UPGRADES.find(x=>x.id===id);
-    if(u){notify('Unlocked: '+u.name);beep('obj');}
-    buildUpgrades();refreshShop();
-  };
-
-  // ---- UI setup ----
-  function setupUI(scene){
-    function exitTools(){
-      connMode=false;delMode=false;
-      document.getElementById('tool-connect').classList.remove('active');
-      document.getElementById('tool-delete').classList.remove('active','del');
-      if(selNode?.clearTint)selNode.clearTint();selNode=null;
-    }
-
-    document.getElementById('tool-connect').addEventListener('click',()=>{
-      const next=!connMode;exitTools();connMode=next;
-      document.getElementById('tool-connect').classList.toggle('active',connMode);
-      setStatus(connMode?'Connect mode — click two components to wire them.':'Ready.');
-    });
-    document.getElementById('tool-delete').addEventListener('click',()=>{
-      const next=!delMode;exitTools();delMode=next;
-      document.getElementById('tool-delete').classList.toggle('del',delMode);
-      setStatus(delMode?'Delete mode — click a component or wire to remove it.':'Ready.');
-    });
-
-    // Themes
-    function applyTheme(t){
-      S.theme=t;
-      ['circuit','space','dark'].forEach(x=>document.getElementById('th-'+x).classList.toggle('on',x===t));
-      if(bgTile)bgTile.setVisible(t==='circuit');
-      starsG.setVisible(t==='space'||t==='circuit');
-      if(t==='circuit')scene.cameras.main.setBackgroundColor('#060c12');
-      else if(t==='space'){scene.cameras.main.setBackgroundColor('#040810');bgG.clear();}
-      else{scene.cameras.main.setBackgroundColor('#080c14');bgG.clear();}
-    }
-    document.getElementById('th-circuit').addEventListener('click',()=>applyTheme('circuit'));
-    document.getElementById('th-space').addEventListener('click',()=>applyTheme('space'));
-    document.getElementById('th-dark').addEventListener('click',()=>applyTheme('dark'));
-
-    document.getElementById('tog-bp').addEventListener('click',()=>{
-      S.backplaneOn=!S.backplaneOn;
-      document.getElementById('tog-bp').classList.toggle('on',S.backplaneOn);redraw();
-    });
-    document.getElementById('tog-stars').addEventListener('click',()=>{
-      S.shootingStars=!S.shootingStars;
-      document.getElementById('tog-stars').classList.toggle('on',S.shootingStars);
-    });
-    document.getElementById('btn-econ').addEventListener('click',()=>{
-      S.economyOn=!S.economyOn;
-      document.getElementById('btn-econ').textContent='Economy: '+(S.economyOn?'ON':'OFF');
-      document.getElementById('btn-econ').classList.toggle('on',S.economyOn);
-      refreshShop();
-    });
-    document.getElementById('btn-upgrades').addEventListener('click',()=>{buildUpgrades();document.getElementById('umodal').classList.add('open');});
-    document.getElementById('umodal').addEventListener('click',e=>{if(e.target===document.getElementById('umodal'))document.getElementById('umodal').classList.remove('open');});
-    document.getElementById('btn-reset').addEventListener('click',()=>{
-      if(!confirm('Reset everything?'))return;
-      S.money=100;S.totalEarned=0;S.time=0;S.heat=0;S.powerCap=300;
-      S.objectives=new Set();S.upgrades={};S.throughput=0;
-      components.forEach(c=>{if(c._lbl)c._lbl.destroy();c.destroy();});
-      components=[];lines=[];exitTools();
-      const bb=spawnComp(scene,'baseboard');bb.x=scene.scale.width/2;bb.y=scene.scale.height/2;syncPorts(bb);
-      redraw();refreshShop();notify('Game reset','warn');
-    });
-
-    scene.input.on('pointerdown',pointer=>{
-      if(pointer.rightButtonDown())deleteLineNear(pointer.worldX,pointer.worldY);
-      else if(delMode)deleteLineNear(pointer.worldX,pointer.worldY);
-    });
-    scene.input.on('pointermove',pointer=>{
-      cursor.x=pointer.worldX;cursor.y=pointer.worldY;
-      const gc=document.getElementById('game-container').getBoundingClientRect();
-      const tt=document.getElementById('tt');
-      tt.style.left=(gc.left+pointer.x+16)+'px';
-      tt.style.top=(gc.top+pointer.y+8)+'px';
-    });
-    scene.input.mouse.disableContextMenu();
-
-    scene.input.on('dragstart',(_p,obj)=>{
-      if(obj.type==='retimer'){obj._dragging=true;detachRetimer(obj);}
-      obj.setDepth(10);if(obj._lbl)obj._lbl.setDepth(11);
-    });
-    scene.input.on('drag',(_p,obj,dx,dy)=>{
-      obj.x=dx;obj.y=dy;
-      if(obj.type==='baseboard')syncPorts(obj);
-      if(obj._lbl)obj._lbl.setPosition(dx,dy+(obj.type==='memory'?32:obj.type==='baseboard'?42:28));
-      redraw();
-    });
-    scene.input.on('dragend',(_p,obj)=>{
-      obj.setDepth(obj.type==='baseboard'?2:3);if(obj._lbl)obj._lbl.setDepth(6);
-      if(obj.type==='retimer'){
-        obj._dragging=false;
-        const best=nearestLine(obj.x,obj.y);
-        if(best&&best.dist<=14&&best.t>0.05&&best.t<0.95)attachRetimer(obj,best.line,best.t);
-      }
-      redraw();
-    });
-
-    scene.scale.on('resize',gs=>{
-      if(bgTile){bgTile.setSize(gs.width,gs.height);bgTile.setTileScale(gs.width/512,gs.height/512);}
-      initStars(gs.width,gs.height);redraw();
-    });
-
-    document.addEventListener('keydown',e=>{
-      if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON')return;
-      if(e.key==='c'||e.key==='C')document.getElementById('tool-connect').click();
-      if(e.key==='d'||e.key==='D')document.getElementById('tool-delete').click();
-      if(e.key==='Escape'){exitTools();setStatus('Ready.');}
-    });
-  }
-
-  // ================================================================
-  // PHASER SCENE
-  // ================================================================
-  function preload(){
-    // Feed the pre-converted data URIs to Phaser's standard loader.
-    // data: URIs need no XHR, no CORS, no server — work on file:// perfectly.
-    for(const [key, uri] of Object.entries(IMG_DATA_URIS)){
-      this.load.image(key, uri);
-    }
-  }
-
-  function create(){
-    const scene=this;
-    const W=scene.scale.width,H=scene.scale.height;
-
-    const loaded=Object.keys(IMG_DATA_URIS).length;
-    const total=Object.keys(IMG_SRCS).length;
-    setStatus('Ready — buy components from the shop. ('+loaded+'/'+total+' assets loaded)');
-
-    // Background layers
-    bgG    =scene.add.graphics().setDepth(-10);
-    starsG =scene.add.graphics().setDepth(-9);
-
-    // Circuit background tile
-    if(scene.textures.exists('bgcircuit')){
-      bgTile=scene.add.tileSprite(W/2,H/2,W,H,'bgcircuit').setDepth(-10).setAlpha(.55);
-      bgTile.setTileScale(W/512,H/512);
-    }
-
-    wireG   =scene.add.graphics().setDepth(0);
-    glowG   =scene.add.graphics().setDepth(1);
-    // sprites at depth 2-3
-    procG   =scene.add.graphics().setDepth(3);
-    overlayG=scene.add.graphics().setDepth(4);
-    flowG   =scene.add.graphics().setDepth(5);
-
-    initStars(W,H);
-    setupUI(scene);
-    buildShop(scene);
-    checkObjectives();
-
-    // Start with one baseboard
-    const bb=spawnComp(scene,'baseboard');
-    bb.x=W/2;bb.y=H/2;syncPorts(bb);
-    redraw();
-    notify('Data Center Architect v2 — good luck!');
-  }
-
-  function update(_t,delta){
-    const dt=delta/1000;
-    S.time+=dt;
-
-    if(S.economyOn){
-      const inc=S.throughput*upg.incomeGPU()+0.05;
-      S.money+=inc*dt;S.totalEarned+=inc*dt;
-    }
-
-    // Heat dynamics
-    const workGPUs=components.filter(n=>n.isPart&&n.type==='gpu'&&n.working).length;
-    const fans=components.filter(n=>n.isPart&&n.type==='cooling').length;
-    S.heat=Math.max(0,Math.min(upg.maxHeat()*1.5,S.heat+(workGPUs*2.5-fans*5)*dt));
-
-    // Background drawing
-    const W=this.scale.width,H=this.scale.height;
-    if(S.theme==='circuit'){
-      // Slow tile pan for circuit bg
-      if(bgTile){bgTile.tilePositionX+=8*dt;bgTile.tilePositionY+=4*dt;}
-      // Dim overlay
-      bgG.clear();bgG.fillStyle(0x030608,.55);bgG.fillRect(0,0,W,H);
-    } else if(S.theme==='space'){
-      bgG.clear();bgG.fillStyle(0x040810,1);bgG.fillRect(0,0,W,H);
-    } else {
-      bgG.clear();bgG.fillStyle(0x080c14,1);bgG.fillRect(0,0,W,H);
-    }
-
-    // Stars overlay (circuit + space themes)
-    if(S.theme==='circuit'||S.theme==='space'){
-      starsG.clear();
-      drawStars(starsG,dt,W,H);
-    } else {
-      starsG.clear();
-    }
-
-    drawFlow(dt);
-    refreshShop();
-  }
-
-  const config={
-    type:Phaser.AUTO,
-    backgroundColor:'#060c12',
-    parent:'game-container',
-    scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH},
-    scene:{preload,create,update},
-  };
-  window._game=new Phaser.Game(config);
+  if(!reply) reply="Hmm, let me think on that... Ask me something else?";
+  setTimeout(function(){typing=false;typeT(reply)},400+Math.random()*600);
 }
 
-// ---- Load Phaser, then start game ----
-const SRCS=['./phaser.min.js','./phaser.js',
-  'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js'];
-let si=0;
-function loadP(){
-  if(si>=SRCS.length){setStatus('Error: Phaser.js failed to load');return;}
-  const s=document.createElement('script');
-  s.onload=()=>{if(typeof Phaser!=='undefined')initGame();else{si++;loadP();}};
-  s.onerror=()=>{si++;loadP();};
-  s.src=SRCS[si++];
-  document.head.appendChild(s);
-}
-function setStatus(m){const el=document.getElementById('status-msg');if(el)el.textContent=m;}
+function typeT(t){if(tInt)clearInterval(tInt);dText.textContent='';var i=0;
+tInt=setInterval(function(){if(i<t.length){dText.textContent+=t.charAt(i);i++}else clearInterval(tInt)},18)}
 
-// Step 1: pre-load all images via DOM Image (works on file://)
-// Step 2: once images are ready, load Phaser and start the game
-preloadAllImages().then(()=>loadP());
+function openD(n){aNpc=n;dOpen=true;dBox.classList.add('v');
+spkEl.textContent=n.nm+' — '+n.rl;spkEl.style.color=n.clr;
+dInput.placeholder='Speak to '+n.nm+'...';
+setTimeout(function(){dInput.focus()},100);
+if(n.cv.length===0){typeT(n.gr);n.cv.push({role:'assistant',content:n.gr})}
+else{var last=n.cv[n.cv.length-1];if(last.role==='assistant')dText.textContent=last.content}}
+
+function closeD(){dOpen=false;dBox.classList.remove('v');aNpc=null;if(tInt)clearInterval(tInt)}
+
+dSend.addEventListener('click',function(){var m=dInput.value.trim();if(!m||typing)return;dInput.value='';sendMsg(m)});
+dInput.addEventListener('keydown',function(e){e.stopPropagation();if(e.key==='Enter'){e.preventDefault();dSend.click()}if(e.key==='Escape')closeD()});
+dClose.addEventListener('click',closeD);
+
+// Harp
+var lht=0,hns=["♪ TWANNGGG ♪","♪ BOIIINNNG ♪","♪ THRUMMM ♪","♪ BRRRANNG ♪","♪ DOIINNG ♪","♪ VRRRMMMM ♪"];
+function playH(){var n=Date.now();if(n-lht<600)return;lht=n;harpSnd();
+hOv.style.display='block';hOv.querySelector('.ht').textContent=hns[Math.floor(Math.random()*hns.length)];
+setTimeout(function(){hOv.style.display='none'},800)}
+
+// Minimap
+var mmCtx=document.getElementById('mc').getContext('2d');
+function drawMM(){mmCtx.clearRect(0,0,130,130);mmCtx.fillStyle='rgba(10,6,4,.9)';mmCtx.fillRect(0,0,130,130);
+var s=4.5,cx=65,cy=45;
+mmCtx.strokeStyle='rgba(232,168,64,.2)';mmCtx.lineWidth=1;mmCtx.strokeRect(cx-10*s,cy-10*s,20*s,36*s);
+mmCtx.fillStyle='rgba(255,100,0,.2)';mmCtx.fillRect(cx+(-5-1.25)*s,cy+(-6-1)*s,2.5*s,2*s);
+mmCtx.fillStyle='rgba(255,80,0,.15)';mmCtx.fillRect(cx+(6-.9)*s,cy+(-5.5-.75)*s,1.8*s,1.5*s);
+mmCtx.fillStyle='rgba(196,148,44,.2)';mmCtx.fillRect(cx-1.5*s,cy+14.5*s-.5*s,3*s,1.5*s);
+npcs.forEach(function(n){var p=n.obj.position;mmCtx.fillStyle=n.clr;mmCtx.beginPath();mmCtx.arc(cx+p.x*s,cy+p.z*s,2,0,Math.PI*2);mmCtx.fill();mmCtx.font='5px sans-serif';mmCtx.textAlign='center';mmCtx.fillText(n.nm.split(' ')[0],cx+p.x*s,cy+p.z*s-3.5)});
+mmCtx.fillStyle='#44dd66';var ppx=cx+P.pos.x*s,ppz=cy+P.pos.z*s;
+mmCtx.beginPath();mmCtx.arc(ppx,ppz,2.5,0,Math.PI*2);mmCtx.fill();
+mmCtx.strokeStyle='#44dd66';mmCtx.lineWidth=1;mmCtx.beginPath();mmCtx.moveTo(ppx,ppz);mmCtx.lineTo(ppx+Math.sin(P.yaw)*7,ppz-Math.cos(P.yaw)*7);mmCtx.stroke()}
+
+// NPC labels
+var nlDiv=document.getElementById('nl');
+function updL(){nlDiv.innerHTML='';npcs.forEach(function(n){
+var wp=new THREE.Vector3();n.obj.getWorldPosition(wp);wp.y+=2.15;
+var sp3=wp.clone().project(cam);if(sp3.z>1)return;
+var x=(sp3.x*.5+.5)*window.innerWidth,y=(-sp3.y*.5+.5)*window.innerHeight;
+var d=P.pos.distanceTo(n.obj.position);if(d>14)return;
+var op=Math.max(0,Math.min(1,1-(d-5)/8));
+var lb=document.createElement('div');lb.className='nl';
+lb.style.cssText='left:'+x+'px;top:'+y+'px;color:'+n.clr+';background:rgba(10,6,4,'+.6*op+');border-bottom:1px solid '+n.clr+';opacity:'+op;
+lb.textContent=n.nm;nlDiv.appendChild(lb)})}
+
+// ═══ GAME LOOP ═══
+var clk=new THREE.Clock(),aT=0,started=false;
+document.getElementById('sb').addEventListener('click',function(){document.getElementById('to').classList.add('h');started=true;ia()});
+
+function closest(){var cn=null,md=Infinity;npcs.forEach(function(n){var d=P.pos.distanceTo(n.obj.position);if(d<md){md=d;cn=n}});return{npc:cn,dist:md}}
+
+function loop(){
+  requestAnimationFrame(loop);if(!started){R.render(S,cam);return}
+  var dt=Math.min(clk.getDelta(),.05),t=clk.getElapsedTime();
+
+  if(!dOpen){
+    var mv=new THREE.Vector3();
+    if(K['KeyW'])mv.z-=1;if(K['KeyS'])mv.z+=1;if(K['KeyA'])mv.x-=1;if(K['KeyD'])mv.x+=1;
+    if(mv.length()>0){mv.normalize().applyAxisAngle(new THREE.Vector3(0,1,0),P.yaw);
+    var nx=P.pos.x+mv.x*P.spd*dt,nz=P.pos.z+mv.z*P.spd*dt;
+    if(nx>-9.5&&nx<9.5)P.pos.x=nx;if(nz>-9.5&&nz<17.5)P.pos.z=nz}
+    if(K['ArrowLeft'])P.yaw+=P.ts*dt;if(K['ArrowRight'])P.yaw-=P.ts*dt;
+    if(K['Space'])playH();
+    if(K['KeyE']){var c=closest();if(c.npc&&c.dist<3.5)openD(c.npc);K['KeyE']=false}
+  }
+
+  cam.position.copy(P.pos);cam.rotation.set(0,P.yaw,0);
+  var c=closest();
+  if(c.npc&&c.dist<3.5&&!dOpen){iPr.style.display='block';iPr.innerHTML='Press <b>E</b> to speak with '+c.npc.nm}
+  else iPr.style.display='none';
+
+  // Fire animation
+  fL.intensity=2.5+Math.sin(t*8)*.5+Math.sin(t*13)*.3;
+  fL.color.setHSL(.06+Math.sin(t*5)*.02,1,.5);
+  fire.scale.y=1+Math.sin(t*10)*.15;fire.scale.x=1+Math.sin(t*7)*.1;fire.rotation.y=t*2;
+  fire2.scale.y=1+Math.sin(t*8+1)*.12;fire2.rotation.y=t*1.5;
+  fL2.intensity=1.5+Math.sin(t*7)*.3;
+  cflame.scale.setScalar(.8+Math.sin(t*12)*.2);
+  cndL.intensity=.3+Math.sin(t*10)*.08;
+
+  embers.children.forEach(function(e){e.position.y+=e.userData.spd*dt;e.position.x+=Math.sin(t*3+e.userData.off)*.003;if(e.position.y>4){e.position.y=1.2;e.position.x=-5+(Math.random()-.5)}e.material.opacity=Math.max(0,.7-(e.position.y-1.2)*.25)});
+  smk.forEach(function(p){p.position.y+=p.userData.spd*dt;p.position.x=p.userData.bx+Math.sin(t+p.userData.sw)*.3;if(p.position.y>6){p.position.y=2;p.material.opacity=.1}p.material.opacity=Math.max(0,.1-(p.position.y-2)*.025);var sc=1+(p.position.y-2)*.25;p.scale.set(sc,sc,sc)});
+
+  // NPC animations
+  [luca,yuriy,alexO,iversen,britney,tiffanyO].forEach(function(n,i){n.rotation.y+=Math.sin(t*.5+i*2)*.0003});
+  [luca,yuriy,alexO,iversen].forEach(function(n){var hObj=null;n.children.forEach(function(c){if(c.name==='hammer')hObj=c});
+  if(hObj){var cy2=t%3;if(cy2<.5){hObj.rotation.x=-Math.sin(cy2*Math.PI*2)*.8;if(cy2>.2&&cy2<.25){aT+=dt;if(aT>.4){anvilSnd();aT=0}}}else hObj.rotation.x=0}});
+
+  updL();drawMM();R.render(S,cam);
+}
+loop();
+
+window.addEventListener('resize',function(){cam.aspect=window.innerWidth/window.innerHeight;cam.updateProjectionMatrix();R.setSize(window.innerWidth,window.innerHeight)});
+})();
 </script>
 </body>
 </html>
